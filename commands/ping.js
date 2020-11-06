@@ -7,7 +7,6 @@ module.exports = {
         if (role) // only accept it if it has a bot
         {
             message.channel.send('pong!'); 
-            message.channel.send();
         }
     }
 }

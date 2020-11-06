@@ -10,14 +10,17 @@ commandFiles.forEach( file => {
 })
 
 // whenever client is ready, run this code
-client.once('ready', () => {
-    console.log("logged in as " + client.user.username); 
-    console.log("user object: ");
-    console.log(client.user); 
-});
+client.once('ready', 
+    () => {
+        console.log("logged in as " + client.user.username); 
+        // console.log("user object: ");
+        // console.log(client.user); 
+    }
+);
 
-// log in the token // TODO: replace the token with a path and place the token in a file
-client.login("NzYxNjkyMDMyMzY3NTkxNDc1.X3eS_A.Owi4O8ASea-2hbhgyq85-SDAayc"); 
+// log in with the token 
+const config = require('./config');
+client.login(config.token); 
 
 // coding prefix 
 const prefix = '!';
@@ -25,10 +28,10 @@ const prefix = '!';
 client.on('message', message => {
 
     console.log("Message: ", message.content)
+
     if (message.author.bot) 
     {   
         // if the message author is not a bot
-        // console.log("message processing ended: ", 1)
         return;
     }
     else if (message.mentions.members.size==0 || message.mentions.members.filter(member => member.id === client.user.id).size==0 ) 
