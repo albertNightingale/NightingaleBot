@@ -13,9 +13,9 @@ const teleportCommandHandler = (message, args, attachments) => {
         //      location in x=x y=y ->  x, y integers
         let xlocation = -1;
         let ylocation = -1;
+        var errorOccured = false;
 
         args.forEach(arg => {
-            // if (arg === undefined) return;
             var normalizedArg = arg.trim();
             if (normalizedArg === '') return;
 
@@ -25,7 +25,6 @@ const teleportCommandHandler = (message, args, attachments) => {
                     console.log("Not a number", ylocation);
                     ylocation = -1;
                 }
-                console.log('Yes')
             }
             else if (normalizedArg.includes("x=")) {   // the x location
                 xlocation = parseInt(normalizedArg.replace("x=", ""));
@@ -33,9 +32,15 @@ const teleportCommandHandler = (message, args, attachments) => {
                     console.log("Not a number", xlocation);
                     xlocation = -1;
                 }
-                console.log('Xes')
+            }
+            else {
+                message.channel.send(message.author, 'Invalid Argument: ' + arg + ' cannot be a valid argument. ');
+                errorOccured = true;
+                return;
             }
         });
+
+        if (errorOccured) return;
 
         if (xlocation === -1 || ylocation === -1) // x y param missing
         {
@@ -52,6 +57,7 @@ const teleportCommandHandler = (message, args, attachments) => {
             return;
         }
         else {
+            // filter attachments
             const validAttachments = attachments.map(
                 messageAttachment => {
                     if (messageAttachment.name.includes('txt') && messageAttachment.size <= sizeLimit) return messageAttachment;
