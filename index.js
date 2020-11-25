@@ -1,6 +1,7 @@
 const Discord = require('discord.js'); // initialializing disord apis
 const client = new Discord.Client(); // initializing a discord bot
 
+// set up the files
 const fs = require('fs'); 
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
@@ -13,8 +14,6 @@ commandFiles.forEach( file => {
 client.once('ready', 
     () => {
         console.log("logged in as " + client.user.username); 
-        // console.log("user object: ");
-        // console.log(client.user); 
     }
 );
 
@@ -22,7 +21,7 @@ client.once('ready',
 const config = require('./config');
 client.login(config.token); 
 
-// coding prefix 
+// command prefix 
 const prefix = '!';
 
 client.on('message', message => {
@@ -35,25 +34,22 @@ client.on('message', message => {
         return;
     }
     else if (message.mentions.members.size==0 || message.mentions.members.filter(member => member.id === client.user.id).size==0 ) 
-    {   
-        // if it is not mentioning the bot. 
-        // console.log("message processing ended: ", 2)
+    {   // if it is not mentioning the bot. 
         return;
     }
-    else if (!message.content.includes(prefix)) {
-        // if the message content does not start with the prefix (not a command). 
-        // console.log("message processing ended: ", 3)
+    else if (!message.content.includes(prefix)) 
+    {   // if the message content does not start with the prefix (not a command). 
         return; 
     }
 
     // normalize the command
     // parse out the attachment, arguments, and the command
     const attachments = message.attachments.array(); 
-    console.log("attachments amount: ", attachments.length); 
+    console.log("\tattachments amount: ", attachments.length); 
     const args = message.content.replace("<@!" + client.user.id + ">", "").trim().split(/ +/); // split out arguments following the command  
-    console.log("args: ", args); 
+    console.log("\targs: ", args); 
     let command = args.shift().toLowerCase();  
-    console.log("command: ", command);
+    console.log("\tcommand: ", command);
 
     switch (command) {
         case '!ping': 

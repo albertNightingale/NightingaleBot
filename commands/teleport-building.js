@@ -3,9 +3,10 @@ const { send } = require('process');
 const sizeLimit = require('../config')["attachment-size-limit"];
 const inputFilename = require('../config')['inputfile'];
 const outputFilename = require('../config')['outputfile'];
+const teleportBuildingRole = require('../serverInfo.json')["teleport-building-role"];
 
 const teleportCommandHandler = (message, args, attachments) => {
-    let role = message.member.roles.cache.find(role => role.name === "sample")
+    let role = message.member.roles.cache.find(role => role.name === teleportBuildingRole)
     if (role) // only accept it if it has the corresponding role
     {
         // process the arguments and attachments, if there is no args then send a message saying invalid parameter
@@ -91,37 +92,29 @@ const teleportCommandHandler = (message, args, attachments) => {
 
                         // calculate the length, and width of the input building. 
                         var width = maxX - minX, height = maxY - minY;
-                        console.log('width', width)
-                        console.log('height', height)
-                        console.log('minxy', minX, ' ', minY);
-                        console.log('maxxy', maxX, ' ', maxY);
 
                         // calculate the center location using mid point formula
                         var midX = Math.round((minX + maxX) / 2);
                         var midY = Math.round((minY + maxY) / 2);
 
-                        // depending on the length and width and parameter teleporting position
-                        // process and determine if the teleportation is possible 
-                        // (potential cause of out of bound)
-                        // if teleportation is impossible, send a message saying it is inpossible and terminate
-
+                        // determine if it is possible
                         // xlocation out of bound
-                        if (xlocation - width / 2 < 0 || xlocation + width / 2 > 149)
+                        if (xlocation - width / 2 < 0 || xlocation + width / 2 > 149) {
                             message.channel.send(message.author, "unable to process because the resulted xlocation is smaller than 0 or greater than 149.");
+                            errorOccured = true;
+                        }
                         // y location out of bound
-                        if (ylocation - height / 2 < 0 || ylocation + height / 2 > 149)
+                        if (ylocation - height / 2 < 0 || ylocation + height / 2 > 149) {
                             message.channel.send(message.author, "unable to process because the resulted ylocation is smaller than 0 or greater than 149.");
+                            errorOccured = true;
+                        }
+
+                        if (errorOccured) return;
 
                         // teleport and save the result to a file
                         saveToFile(outputFilename, teleportBuilding(xlocation, ylocation, midX, midY, buildingList));
 
-                        // EXAMPLE: const attachment = new MessageAttachment("https://discord.com/assets/351330f6409e8046b0c996093e3e827b.svg");
-                        const attachment = new MessageAttachment(outputFilename);
-                        message.channel.send(message.author, attachment)
-                            .catch(error => console.log(error))
-                            .finally(() => {
-                                // clean up, remove both input and output files
-                            });
+                        message.channel.send(message.author, new MessageAttachment(outputFilename));
                     });
                 });
             }
@@ -134,14 +127,7 @@ function teleportBuilding(xLocation, yLocation, midX, midY, buildingList) {
     // teleport and modify the list of building objects
     const deltaXDirection = xLocation - midX, deltaYDirection = yLocation - midY;
 
-    console.log('xloc', xLocation);
-    console.log('yloc', yLocation);
-    console.log('midx', midX);
-    console.log('midy', midY);
-    console.log("deltaDirection", deltaXDirection, "deltaDirection", deltaYDirection);
-
     const teleportedBuilding = buildingList.map(item => {
-        console.log(item);
         return {
             'buildid1': item.buildid1,
             'buildid2': item.buildid2,
@@ -151,22 +137,15 @@ function teleportBuilding(xLocation, yLocation, midX, midY, buildingList) {
         };
     });
     
-    console.log('split up')
     let teleportedBuildingCommand = '';
     // convert building to string
-    teleportedBuilding.forEach(item => {
-        console.log(item);
-        teleportedBuildingCommand += buildToString(item);
-    });
+    teleportedBuilding.forEach(item => teleportedBuildingCommand += buildToString(item));
 
     return teleportedBuildingCommand;
 }
 
 /// download data from url
 function download(url, path, callback) {
-    // const normalizedURL = url.replace("https", "http");
-    console.log('URL: ', url);
-
     const https = require('https');
 
     createWriteFileStreamSync(path)
@@ -179,23 +158,17 @@ function download(url, path, callback) {
                     })  
                 });                
             });
-        })
-        .finally(() => {
-            console.log("done with downloading the file");
         });
 }
 
 /// save string to a file
 function saveToFile(path, text) {
-    const fs = require('fs');
     // ensure file has been created
     createWriteFileStreamSync(path)
         .then(stream => {
-            stream.write(text, err => console.log('error: ', err));
+            stream.write(text, err => {});
             stream.on("finish", () => {
-                stream.close(() => {
-                    console.log('Saving Completed');
-                })
+                stream.close(() => { })
             });
         });
 }
@@ -212,22 +185,8 @@ async function createWriteFileStreamSync(path) {
 
 /// read the file and return its entire content in string
 function readBuildingFile(path, callback) {
-    const fs = require('fs')
-    var data = undefined;
-    
-    /*
-    (async () => {
-        return await fs.readFileSync(path, 'utf8')
-    })()
-        .then(buffer => data = buffer.toString())
-        .then(buffer => console.log('buffer data', data))
-        .catch(error => console.log('error occured in readBuildingFile', error))
-        .finally(() => callback(data));
-        */
-    var content = fs.readFileSync(path, 'utf8');
-
-    console.log('content', content)
-    callback(content)
+    const fs = require('fs')    
+    callback(fs.readFileSync(path, 'utf8')); // read from the file and then return
 }
 
 /// geenrate a list of buildingObject from the buildingCommand that is normalized
@@ -239,32 +198,34 @@ function generateBuildingObject(buildingCommandNormalized) {
         const building = [];
 
         itemList.forEach(item => {
-            const itemDetailList = item.replace(/b=/gi, "").split(":");
-            if (itemDetailList.length === 5) {
+            const itemDetail = item.replace(/b=/gi, "").split(":");
+            if (itemDetail[0] === '')
+                return;
+
+            if (itemDetail.length === 5) {
                 building.push(
                     {
-                        'buildid1': parseInt(itemDetailList[0]),
-                        'buildid2': parseInt(itemDetailList[1]),
-                        'buildx': parseInt(itemDetailList[2]),
-                        'buildy': parseInt(itemDetailList[3]),
-                        'builddir': parseInt(itemDetailList[4])
+                        'buildid1': parseInt(itemDetail[0]),
+                        'buildid2': parseInt(itemDetail[1]),
+                        'buildx': parseInt(itemDetail[2]),
+                        'buildy': parseInt(itemDetail[3]),
+                        'builddir': parseInt(itemDetail[4])
                     }
                 );
             }
-            else if (itemDetailList.length === 4) {
-                console.log(itemDetailList[0], itemDetailList[1], itemDetailList[2], itemDetailList[3])
+            else if (itemDetail.length === 4) {
                 building.push(
                     {
-                        'buildid1': parseInt(itemDetailList[0]),
+                        'buildid1': parseInt(itemDetail[0]),
                         'buildid2': -1,
-                        'buildx': parseInt(itemDetailList[1]),
-                        'buildy': parseInt(itemDetailList[2]),
-                        'builddir': parseInt(itemDetailList[3])
+                        'buildx': parseInt(itemDetail[1]),
+                        'buildy': parseInt(itemDetail[2]),
+                        'builddir': parseInt(itemDetail[3])
                     }
                 );
             }
             else {
-                console.log("Not enough length", itemDetailList);
+                console.log("Not enough length", itemDetail);
             }
         });
 
