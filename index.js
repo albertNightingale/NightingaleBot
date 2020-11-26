@@ -36,7 +36,7 @@ client.on('message', message => {
         // if the message author is not a bot
         return;
     }
-    else if (message.mentions.members.size==0 || message.mentions.members.filter(member => member.id === client.user.id).size==0 ) 
+    else if (message.mentions.members.size && (message.mentions.members.size===0 || message.mentions.members.filter(member => member.id === client.user.id).size===0 )) 
     {   // if it is not mentioning the bot. 
         return;
     }
