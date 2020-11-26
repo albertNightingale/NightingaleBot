@@ -18,7 +18,7 @@ client.once('ready',
     () => {
         console.log("logged in as " + client.user.username); 
     }
-);
+); 
 
 // log in with the token 
 console.log(process.env.token)
