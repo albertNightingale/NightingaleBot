@@ -8,7 +8,8 @@ const outputFilename = require('../config')['outputfile'];
 const teleportBuildingRole = process.env.teleportbuildingrole
 
 const teleportCommandHandler = (message, args, attachments) => {
-    let role = message.member.roles.cache.find(role => role.name === teleportBuildingRole)
+    let role = message.member.roles.cache.find(role => role.id === teleportBuildingRole);
+
     if (role) // only accept it if it has the corresponding role
     {
         // process the arguments and attachments, if there is no args then send a message saying invalid parameter
@@ -18,6 +19,7 @@ const teleportCommandHandler = (message, args, attachments) => {
         let ylocation = -1;
         var errorOccured = false;
 
+        
         args.forEach(arg => {
             var normalizedArg = arg.trim();
             if (normalizedArg === '') return;
@@ -116,7 +118,7 @@ const teleportCommandHandler = (message, args, attachments) => {
                         // teleport and save the result to a file
                         saveToFile(outputFilename, teleportBuilding(xlocation, ylocation, midX, midY, buildingList));
 
-                        message.channel.send(message.author, new MessageAttachment(outputFilename));
+                        message.channel.send(message.author, new MessageAttachment(outputFilename))
                     });
                 });
             }
