@@ -21,7 +21,6 @@ client.once('ready',
 );
 
 // log in with the token 
-console.log(process.env.token)
 client.login(process.env.token); 
 
 // command prefix 
