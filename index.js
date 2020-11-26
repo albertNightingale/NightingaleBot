@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const Discord = require('discord.js'); // initialializing disord apis
 const client = new Discord.Client(); // initializing a discord bot
 
@@ -18,8 +21,8 @@ client.once('ready',
 );
 
 // log in with the token 
-const config = require('./config');
-client.login(config.token); 
+console.log(process.env.token)
+client.login(process.env.token); 
 
 // command prefix 
 const prefix = '!';

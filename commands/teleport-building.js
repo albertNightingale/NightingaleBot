@@ -1,9 +1,11 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const { MessageAttachment } = require('discord.js');
-const { send } = require('process');
-const sizeLimit = require('../config')["attachment-size-limit"];
+const sizeLimit = process.env.attachmentsizelimit
 const inputFilename = require('../config')['inputfile'];
 const outputFilename = require('../config')['outputfile'];
-const teleportBuildingRole = require('../serverInfo.json')["teleport-building-role"];
+const teleportBuildingRole = process.env.teleportbuildingrole
 
 const teleportCommandHandler = (message, args, attachments) => {
     let role = message.member.roles.cache.find(role => role.name === teleportBuildingRole)

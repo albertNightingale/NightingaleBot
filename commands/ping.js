@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 module.exports = {
     name: 'ping', 
     description: 'ping commands', 
