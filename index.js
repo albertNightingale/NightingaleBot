@@ -50,19 +50,23 @@ client.on('message', message => {
     console.log("\tattachments amount: ", attachments.length); 
     const args = message.content.replace("<@!" + client.user.id + ">", "")
                                 .replace("<@" + client.user.id + ">", "")
-                                .trim().split(/ +/); // split out arguments following the command  
+                                .trim().split(/ +|=|:/); // split out arguments following the command, split by ' ' or = or :
     console.log("\targs: ", args); 
-    let command = args.shift().toLowerCase();  
-    console.log("\tcommand: ", command);
+    const command = args.shift();
+    const normalizedCommand = command.toLowerCase() // convert all to lowercase
+    console.log("\tcommand: ", normalizedCommand);
 
-    switch (command) {
-        case '!ping': 
-            client.commands.get(command.slice(prefix.length)).execute(message, args); 
+    switch (normalizedCommand) {
+        case '!dada': 
+            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args); 
             break;
         case '!teleport-building': 
-            client.commands.get(command.slice(prefix.length)).execute(message, args, attachments); 
+            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            break;
+        case '!delete-record': 
+            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
         default: 
-            console.log("invalid command: " + command); 
+            console.log("invalid command: " + normalizedCommand); 
     };
 });

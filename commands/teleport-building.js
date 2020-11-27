@@ -15,47 +15,46 @@ const teleportCommandHandler = (message, args, attachments) => {
     {
         console.log(`${devMessage}role not matching: here is a list of roles of the member\n: ${message.member.roles.cache}`)
     }
+    else if (args === undefined || args.length === 0) {
+        console.log(`${devMessage}No arguments passed`)
+    }
     else {
         /***** START OF arguments processing ****/
         // process the arguments and attachments, if there is no args then send a message saying invalid parameter
         // arguments: 
-        //      location in x=x y=y ->  x, y integers
+        //      location in !teleport-building=X:Y ->  X, Y integers
         let xlocation = -1;
         let ylocation = -1;
-        var errorOccured = false;
 
-        args.forEach(arg => {
-            var normalizedArg = arg.trim();
-            if (normalizedArg === '') return;
+        if (args.length <= 2) 
+        {   // go to idx 0 and 1 to grab the x and y location
+            var normalizedArg1 = args[0].trim();
+            xlocation = parseInt(normalizedArg1);
+            var normalizedArg2 = args[1].trim();
+            ylocation = parseInt(normalizedArg2);
 
-            if (normalizedArg.includes("y=")) {   // the y location
-                ylocation = parseInt(normalizedArg.replace("y=", ""));
-                if (isNaN(ylocation)) {
-                    console.log("Not a number", ylocation);
-                    ylocation = -1;
-                }
-            }
-            else if (normalizedArg.includes("x=")) {   // the x location
-                xlocation = parseInt(normalizedArg.replace("x=", ""));
-                if (isNaN(xlocation)) {
-                    console.log("Not a number", xlocation);
-                    xlocation = -1;
-                }
-            }
-            else {
-                message.channel.send(message.author, `${devMessage}Invalid Argument: ${arg} cannot be a valid argument. `);
-                errorOccured = true;
+            if (isNaN(xlocation))
+            {
+                xlocation = -1;
+                console.log("Not a number", normalizedArg1);
+                message.channel.send(message.author, `${devMessage}x parameter is required for building teleportation`);
                 return;
             }
-        });
 
-        if (errorOccured) return;
-
-        if (xlocation === -1 || ylocation === -1) // x y param missing
+            if (isNaN(ylocation))
+            {
+                ylocation = -1;
+                console.log("Not a number", normalizedArg2);
+                message.channel.send(message.author, `${devMessage}y parameter is required for building teleportation`);
+                return;
+            }
+        }
+        else 
         {
             message.channel.send(message.author, `${devMessage}x parameter and y parameter are required for building teleportation`);
             return;
         }
+
         /**** END OF arguments processing ****/
 
         // attachments: 
