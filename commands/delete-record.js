@@ -3,16 +3,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
-
-module.exports = {
-    name: 'delete-record',
-    description: 'delete record commands',
-    execute: deleteRecord
-}
+const modRoles = process.env.modRole.split(/,/)
 
 function deleteRecord(message, args) {
-    let role = message.member.roles.cache.find(role => role.id === process.env.teleportbuildingrole)
-    if (!role) // only accept it if it has a bot
+    let deleteRecordRole = message.member.roles.cache.find(role => modRoles.includes(role.id))
+    if (!deleteRecordRole) // only accept it if it has a bot
     {
         console.log(`${devMessage}role not matching: here is a list of roles for the member\n: ${JSON.stringify(message.member.roles.cache)}`)
         return;
@@ -94,9 +89,6 @@ function deleteRecord(message, args) {
     } catch (error) {
         message.channel.send(`${message.author} Exception occured: ${error}`);
     }
-
-    
-
 }
 
 /// save string to a file
@@ -147,3 +139,9 @@ function generateCommand(topLeftLocation, botRightLocation) {
     return command;
 }
 
+
+module.exports = {
+    name: 'delete-record',
+    description: 'delete record commands',
+    execute: deleteRecord
+}

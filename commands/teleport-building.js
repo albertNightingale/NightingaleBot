@@ -3,15 +3,16 @@ dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const { MessageAttachment } = require('discord.js');
-const sizeLimit = process.env.attachmentsizelimit
+const sizeLimit = require('../config')['attachmentsizelimit'];
 const inputFilename = require('../config')['inputfile'];
 const outputFilename = require('../config')['outputfile'];
-const teleportBuildingRole = process.env.teleportbuildingrole
 
-const teleportCommandHandler = (message, args, attachments) => {
-    let role = message.member.roles.cache.find(role => role.id === teleportBuildingRole);
+const modRoles = process.env.modRole.split(/,/)
 
-    if (!role) // only accept it if it has the corresponding role
+function teleportCommandHandler (message, args, attachments) {
+    let teleportBuildingRole = message.member.roles.cache.find(role => modRoles.includes(role.id));
+
+    if (!teleportBuildingRole) // only accept it if it has the corresponding role
     {
         console.log(`${devMessage}role not matching: here is a list of roles of the member\n: ${message.member.roles.cache}`)
     }
@@ -37,7 +38,7 @@ const teleportCommandHandler = (message, args, attachments) => {
             {
                 xlocation = -1;
                 console.log("Not a number", normalizedArg1);
-                message.channel.send(message.author, `${devMessage}x parameter is required for building teleportation`);
+                message.channel.send(`${message.author} ${devMessage}x parameter is required for building teleportation`);
                 return;
             }
 
@@ -45,13 +46,13 @@ const teleportCommandHandler = (message, args, attachments) => {
             {
                 ylocation = -1;
                 console.log("Not a number", normalizedArg2);
-                message.channel.send(message.author, `${devMessage}y parameter is required for building teleportation`);
+                message.channel.send(`${message.author} ${devMessage}y parameter is required for building teleportation`);
                 return;
             }
         }
         else 
         {
-            message.channel.send(message.author, `${devMessage}x parameter and y parameter are required for building teleportation`);
+            message.channel.send(`${message.author} ${devMessage}x parameter and y parameter are required for building teleportation`);
             return;
         }
 
@@ -62,7 +63,7 @@ const teleportCommandHandler = (message, args, attachments) => {
 
         if (attachments === undefined || attachments.length === 0) {   // there are no attachments
             console.log('cannot find attachments that contains the building command: missing or undefined');
-            message.channel.send(message.author, `${devMessage}cannot find attachments that contains the building command: missing or undefined`);
+            message.channel.send(`${message.author} ${devMessage}cannot find attachments that contains the building command: missing or undefined`);
             return;
         }
         else {   // filter attachments
@@ -72,7 +73,7 @@ const teleportCommandHandler = (message, args, attachments) => {
 
             if (validAttachments === 0) {
                 console.log('none of the attachments are valid');
-                message.channel.send(message.author, `${devMessage}none of the attachments are valid: require txt files smaller than ${sizeLimit} bytes`);
+                message.channel.send(`${message.author} ${devMessage}none of the attachments are valid: require txt files smaller than ${sizeLimit} bytes`);
                 return;
             }
             else {
@@ -88,8 +89,7 @@ const teleportCommandHandler = (message, args, attachments) => {
                     var minX = 0; var minY = 0;
                     var maxX = 0; var maxY = 0;
 
-                    configureBuildingList(buildingList, xlocation, ylocation, 
-                        (minX, minY, maxX, maxY, width, height, midX, midY) => {
+                    configureBuildingList(buildingList, (minX, minY, maxX, maxY, width, height, midX, midY) => {
                             midpointX = midX
                             midpointY = midY
                             
@@ -148,14 +148,14 @@ function canTeleport(message, xlocation, ylocation, width, height) {
     // xlocation out of bound
     var isXOutOfBound = xlocation - width / 2 < 0 || xlocation + width / 2 > 149; 
     if (isXOutOfBound) {
-        message.channel.send(message.author, `${devMessage}unable to process because the resulted xlocation is smaller than 0 or greater than 149.`);
+        message.channel.send(`${message.author} ${devMessage}unable to process because the resulted xlocation is smaller than 0 or greater than 149.`);
         ableToTeleport = false;
     }
 
     // y location out of bound
     var isYOutOfBound = ylocation - height / 2 < 0 || ylocation + height / 2 > 149;
     if (isYOutOfBound) {
-        message.channel.send(message.author, `${devMessage}unable to process because the resulted ylocation is smaller than 0 or greater than 149.`);
+        message.channel.send(`${message.author} ${devMessage}unable to process because the resulted ylocation is smaller than 0 or greater than 149.`);
         ableToTeleport = false;
     }
 
@@ -165,7 +165,7 @@ function canTeleport(message, xlocation, ylocation, width, height) {
 /// Get all the properties regarding to the buildingList
 /// including, minX, minY, maxX, maxY, width, height, midX, midY
 /// return true if not able to teleport
-function configureBuildingList(buildingList, xlocation, ylocation, callback) {
+function configureBuildingList(buildingList, callback) {
 
     // calculate the minimum location and maximum location
     var minX = 200, minY = 200;
