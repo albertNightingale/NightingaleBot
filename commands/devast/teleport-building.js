@@ -3,9 +3,9 @@ dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const { MessageAttachment } = require('discord.js');
-const sizeLimit = require('../config')['attachmentsizelimit'];
-const inputFilename = require('../config')['inputfile'];
-const outputFilename = require('../config')['outputfile'];
+const sizeLimit = require('../../config')['attachmentsizelimit'];
+const inputFilename = require('../../config')['inputfile'];
+const outputFilename = require('../../config')['outputfile'];
 
 const modRoles = process.env.modRole.split(/,/)
 
