@@ -107,6 +107,9 @@ async function executeCommand(normalizedCommand, message, args, attachments)
         case '!derank': 
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
+        case '!levelup': 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            break;
         default: 
             console.log("invalid command: " + normalizedCommand); 
     };

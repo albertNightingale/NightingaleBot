@@ -1,3 +1,4 @@
+const { Model } = require('mongoose');
 const User = require('../../models/discordUser');
 
 const defaultUser = new User({
@@ -6,7 +7,7 @@ const defaultUser = new User({
 });
 
 // to level up the user
-exports.levelUp = ( id ) => {
+exports.levelUp = ( id, levelsRequested ) => {
     User.findOne( { userId: id }, (err, discordUser) => {
         if (err) // if there is an error with reading/connecting the database
         {
@@ -17,36 +18,33 @@ exports.levelUp = ( id ) => {
         // if the id does not exist, the person is new
         if (!discordUser) {
             console.log("user does not exist");
-            // add the user to the database
-            this.addUser(
-                { 
-                    userId : id, 
-                    level : 2,
-                    isMember : true,
-                    memberSince : Date.now()
-                }
-            )
+            throw "user does not exist";
         }
         else 
         {
-            console.log("user does exist");
             User.updateOne( 
-                { userId : id }, { level: discordUser.level + 1 }, 
+                { userId : id }, { level: discordUser.level + levelsRequested }, 
                 function (err, docs) {
                     if (err) console.log(err);
-                    else console.log('updated', docs);
                 }
             );
         }
-        
     });
 }
 
-// add user to database
-exports.addUser = (user) => {
-    user.save( (err) => {
-        if (err) console.log(err); 
-    })
+/**
+ * add user to database
+ * @param {User} user 
+ */
+exports.addUser = async (user) => {    
+    try
+    {
+        await user.save(); 
+    }
+    catch (err)
+    {
+        console.log(error);
+    }
 }
 
 
@@ -63,7 +61,7 @@ exports.derankAll = () => {
 
 // change one member's level to 1
 exports.derankOne = (id) => {
-    User.updateMany( { userId: id } , { level : 1, isMember : false }, 
+    User.update( { userId: id } , { level : 1, isMember : false }, 
         function (err, docs) {
             if (err) console.log(err);
             else console.log('deranked', docs);
@@ -73,23 +71,15 @@ exports.derankOne = (id) => {
 
 
 // find a user by id
-exports.findUser = (id) => {
-
-    let user = undefined; 
-    User.findOne( { userId: id }, (err, discordUser) => {
-        if (err) 
-        {
-            console.log(err);
-            return;
-        }
-
-        if (!discordUser)
-        {
-            return;
-        }
-
-        user = discordUser;
-    });
+exports.findUser = async (id) => {
+    let user = undefined
+    try {
+        user = await User.findOne({ userId: id }).exec();
+    } 
+    catch (error) 
+    {
+        throw `error finding user with id ${id}`;
+    }
 
     return user;
 }

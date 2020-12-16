@@ -13,8 +13,7 @@ const discordPeopleSchema = new Schema(
             {
                 type: Number,
                 default: 1,
-                min: 1,
-                max: 100,
+                min: 1
             },
         isMember: 
             {

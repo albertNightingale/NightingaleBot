@@ -11,10 +11,14 @@ const databaseController = require('../../util/dbController/controller');
 
 const User = require('../../models/discordUser');
 
+const util = require('../../util/util');
+
 // !derank @username @username @username
 async function derankHandler(message, args, attachments) {
 
-    const listOfTargets = processArguments (message, args);
+    if(!util.hasAdminPermission(message)) return;
+    
+    const listOfTargets = await processArguments (message, args);
     const server = getGuildInformation(message);
 
     for (let idx = 0; idx < listOfTargets.length; idx++)
@@ -29,14 +33,14 @@ async function derankHandler(message, args, attachments) {
                 isMember : false,
                 memberSince : Date.now()
             });
-            databaseController.addUser(dbUser)       
+            await databaseController.addUser(dbUser)       
         }
         else {
-            databaseController.derankOne(dbUser.id);
+            await databaseController.derankOne(dbUser.userId);
         }
 
         // remove all the existing rank roles
-        const roleAsOfNow = determineRole(dbUser.level) // a string roleID
+        const roleAsOfNow = util.determineRole(dbUser.level) // a string roleID
 
         await guildUser.roles.remove(roleAsOfNow);
         const hasMemberRole = guildUser.roles.cache.find( role => role.id === process.env.memberRoleID ); 
@@ -44,29 +48,7 @@ async function derankHandler(message, args, attachments) {
             await guildUser.roles.remove(process.env.memberRoleID ); // remove the member role
     }
 
-    await message.send("derank complete");
-}
-
-/**
- * based on the level determine the role of the user
- * @param {Number} level the level of the user in integer  
- * @returns {String} current_role of the user in string
- */
-function determineRole (level) {
-    if (level >= 80)
-        return process.env.level80RoleID;
-    else if (level >= 60)
-        return process.env.level60RoleID;
-    else if (level >= 40)
-        return process.env.level40RoleID;
-    else if (level >= 30)
-        return process.env.level30RoleID;
-    else if (level >= 20)
-        return process.env.level20RoleID;
-    else if (level >= 10)
-        return process.env.level10RoleID;
-    else 
-        return process.env.memberRoleID;
+    await message.channel.send("derank complete");
 }
 
 /**
@@ -75,7 +57,7 @@ function determineRole (level) {
  * @param {Array<String>} args the argument content
  * @returns {Array<Object>} targetsToDerank is a list of objects wrapping discord users and database users
  */
-function processArguments (message, args)
+async function processArguments (message, args)
 {
     if (args === undefined || args.length === 0)
     {
@@ -83,13 +65,17 @@ function processArguments (message, args)
         return undefined;
     }
     else {  // the user list of the target
-        const targetsToDerank = message.mentions.members.map( user => { 
-                return ({
-                    userInDiscord: user, // GuildMember object in Discordjs
-                    userInDB: databaseController.findUser(user.id), // user model in database model
-                })
+        const targetsArray = message.mentions.members.map( user => user);
+        let targetsToDerank = []
+        for (let idx = 0; idx < targetsArray.length; idx++)
+        {
+            const user = targetsArray[idx];
+            const userInDB = await databaseController.findUser(user.id);
+            targetsToDerank.push({
+                userInDiscord: user, // GuildMember object in Discordjs
+                userInDB: userInDB, // user model in database model
             });
-        console.log(targetsToDerank)
+        }
         return targetsToDerank;
     }
 }
@@ -132,3 +118,4 @@ module.exports = {
     description: 'derank a user',
     execute: derankHandler
 }
+
