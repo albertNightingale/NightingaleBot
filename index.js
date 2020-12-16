@@ -45,19 +45,29 @@ client
 
     const { attachments, args, normalizedCommand } = processMessage(message);
     executeCommand(normalizedCommand, message, args, attachments)
+    .then()
+    .catch(err => console.log(err))
 });
 
 /// validating the message
 function validateMessage(message)
 {
+    // Ignore messages that aren't from a guild
+    if (!message.guild) 
+        return;
+  
     if (message.author.bot)         // if the message author is not a bot
         return false;    
-    // if it is not mentioning the bot. 
-    const messageMentionMembers = message.mentions.members;
-    const isNotMentioningBot = ( messageMentionMembers.size===0 || 
-        messageMentionMembers.filter(member => member.id === client.user.id).size===0 ); 
-    if (isNotMentioningBot) 
-        return false;
+    
+    /*
+        // if it is not mentioning the bot. 
+        const messageMentionMembers = message.mentions.members;
+        const isNotMentioningBot = ( messageMentionMembers.size===0 || 
+            messageMentionMembers.filter(member => member.id === client.user.id).size===0 ); 
+        if (isNotMentioningBot) 
+            return false;
+    */
+
     // if the message content does not start with the prefix (not a command). 
     if (!message.content.includes(prefix)) 
         return false; 
@@ -82,17 +92,20 @@ function processMessage(message)
 }
 
 /// based on the normalizedCommand, calling the corresponding method
-function executeCommand(normalizedCommand, message, args, attachments)
+async function executeCommand(normalizedCommand, message, args, attachments)
 {
     switch (normalizedCommand) {
         case '!dada': 
-            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args); 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args); 
             break;
         case '!teleport-building': 
-            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
         case '!delete-record': 
-            client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            break;
+        case '!derank': 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
         default: 
             console.log("invalid command: " + normalizedCommand); 

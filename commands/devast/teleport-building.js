@@ -7,7 +7,7 @@ const sizeLimit = require('../../config')['attachmentsizelimit'];
 const inputFilename = require('../../config')['inputfile'];
 const outputFilename = require('../../config')['outputfile'];
 
-const modRoles = process.env.modRole.split(/,/)
+const modRoles = process.env.devastModRoleID.split(/,/)
 
 function teleportCommandHandler (message, args, attachments) {
     let teleportBuildingRole = message.member.roles.cache.find(role => modRoles.includes(role.id));

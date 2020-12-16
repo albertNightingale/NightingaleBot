@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
-const modRoles = process.env.modRole.split(/,/)
+const modRoles = process.env.devastModRoleID.split(/,/)
 
 function deleteRecord(message, args) {
     let deleteRecordRole = message.member.roles.cache.find(role => modRoles.includes(role.id))
@@ -81,7 +81,7 @@ function deleteRecord(message, args) {
     try 
     {
         const command = generateCommand(topLeftLocation, botRightLocation);
-        const outputFilename = require('../config')['outputfile'];
+        const outputFilename = require('../../config')['outputfile'];
         saveToFile(outputFilename, command);
         message.channel.send(
             `${message.author} Here you go: `, 

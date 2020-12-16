@@ -6,7 +6,7 @@ const defaultUser = new User({
 });
 
 // to level up the user
-exports.levelUp = ( { id, memberSince } ) => {
+exports.levelUp = ( id ) => {
     User.findOne( { userId: id }, (err, discordUser) => {
         if (err) // if there is an error with reading/connecting the database
         {
@@ -23,7 +23,7 @@ exports.levelUp = ( { id, memberSince } ) => {
                     userId : id, 
                     level : 2,
                     isMember : true,
-                    memberSince : memberSince
+                    memberSince : Date.now()
                 }
             )
         }
@@ -53,13 +53,24 @@ exports.addUser = (user) => {
 // change all player's level to 1
 // set isMember all back to true
 exports.derankAll = () => {
-    User.updateMany( { userId: {$gte: 1} } , { level : 1, isMember : true }, 
+    User.updateMany( { level: {$gte: 1} } , { level : 1, isMember : true }, 
         function (err, docs) {
             if (err) console.log(err);
             else console.log('deranked', docs);
         }
     );
 }
+
+// change one member's level to 1
+exports.derankOne = (id) => {
+    User.updateMany( { userId: id } , { level : 1, isMember : false }, 
+        function (err, docs) {
+            if (err) console.log(err);
+            else console.log('deranked', docs);
+        }
+    );
+}
+
 
 // find a user by id
 exports.findUser = (id) => {
@@ -78,7 +89,7 @@ exports.findUser = (id) => {
         }
 
         user = discordUser;
-    })
+    });
 
     return user;
 }
