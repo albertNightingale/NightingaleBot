@@ -19,7 +19,6 @@ async function derankHandler(message, args, attachments) {
     if(!util.hasAdminPermission(message)) return;
     
     const listOfTargets = await processArguments (message, args);
-    const server = getGuildInformation(message);
 
     for (let idx = 0; idx < listOfTargets.length; idx++)
     { 
@@ -43,8 +42,8 @@ async function derankHandler(message, args, attachments) {
         const roleAsOfNow = util.determineRole(dbUser.level) // a string roleID
 
         await guildUser.roles.remove(roleAsOfNow);
-        const hasMemberRole = guildUser.roles.cache.find( role => role.id === process.env.memberRoleID ); 
-        if (hasMemberRole) // check if it has members role            
+        const memberRole = guildUser.roles.cache.find( role => role.id === process.env.memberRoleID );  // a role
+        if (memberRole) // check if it has members role            
             await guildUser.roles.remove(process.env.memberRoleID ); // remove the member role
     }
 
@@ -80,37 +79,7 @@ async function processArguments (message, args)
     }
 }
 
-// get server information
-function getGuildInformation(message)
-{
-    const guild = message.guild;
 
-    const serverName = guild.name; // string
-    const serverOwner = guild.name; // GuildMember 
-    
-    const serverChannels = guild.channels.cache.map(channel => {
-        return {
-            id : channel.id, // string id of the channel
-            name : channel.name, // string name of the channel
-            createdAt : channel.createdAt, // Date when the channel is created
-            channelType: channel.type, // text of the type of the channel
-            members: channel.members.map( member => member ) // a list of GuildMember
-        }
-    });
-
-    // a list of reconstructed roles object
-    const serverRoles = guild.roles.cache.map( role => {
-        return {
-            id : role.id, // string id of the role
-            name: role.name, // string name of the role
-            members : role.members // string a list of GuildMember
-        }
-    });
-
-    const serverMembers = guild.members.cache.map( member => member );
-
-    return { serverName, serverOwner, serverChannels, serverRoles, serverMembers };
-}
 
 /**********          Export          **********/
 module.exports = {

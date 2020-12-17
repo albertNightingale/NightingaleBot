@@ -12,13 +12,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
-
-const message = require('discord.js')
-const databaseController = require('../../util/dbController/controller');
-
 const User = require('../../models/discordUser');
 const util = require('../../util/util');
-const dbController = require('../../util/dbController/controller');
+const databaseController = require('../../util/dbController/controller');
 
 async function levelUp(message, args, attachments)
 {
@@ -69,7 +65,7 @@ async function levelUp(message, args, attachments)
  * processing arguments from the discord command
  * @param {Discord.Message} message the message object
  * @param {Array<String>} args the argument content
- * @returns {Array<Object>} targetsToDerank is a list of objects wrapping discord users and database users
+ * @returns {Object} an object that holds the userInDiscord, userInDB, levelRequested, levelUpReason
  */
 async function processArguments (message, args)
 {

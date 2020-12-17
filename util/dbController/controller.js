@@ -43,7 +43,7 @@ exports.addUser = async (user) => {
     }
     catch (err)
     {
-        console.log(error);
+        console.log(err);
     }
 }
 
