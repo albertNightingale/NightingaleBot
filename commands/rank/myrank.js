@@ -42,7 +42,7 @@ async function myrank(message, args, attachments) {
         }
 
         const rankRoleIDOfUser = util.determineRole(currentLevel); // string rank role id 
-        const roleName = server.serverRoles.find(role => role.id === rankRoleIDOfUser).name; // string name of the role
+        let roleName = server.serverRoles.find(role => role.id === rankRoleIDOfUser).name; // string name of the role
         const memberRole = user.userInDiscord.roles.cache.find(role => role.id === process.env.memberRoleID);  // a role
         if (!memberRole) // check if it has members role            
             roleName = 'no role';
