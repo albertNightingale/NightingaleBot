@@ -10,59 +10,50 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 const Discord = require('discord.js');
 const logoIconLink = require('../../config')['logoIconLink'];
 
-const User = require('../../models/discordUser')
 const util = require('../../util/util');
-const databaseController = require('../../util/dbController/controller') 
+const databaseController = require('../../util/dbController/controller')
 
 async function myrank(message, args, attachments) {
 
     const user = await processArguments(message, args);
-    const server = util.getGuildInformation(message);
+    const server = await util.getGuildInformation(message);
 
-    if (!user) {
+    if (!user) return;
+
+    const guildUser = user.userInDiscord;
+    const dbUser = user.userInDB; // User object from database
+    const username = user.userInDiscord.displayName; // string user nickname
+
+    if (!dbUser) // database does not have userInDB, create a row in database
+    {
+        await message.channel.send(`${devMessage}You only joined the server recently, meaning you can only participate in the next ranking season. `);
         return;
     }
-    else 
-    {
-        let dbUser = user.userInDB; // User object from database
-        const userNickname = user.userInDiscord.nickname; // string user nickname
-        let currentLevel = 1
-        if (!dbUser) // database does not have userInDB, create a row in database
-        {
-            dbUser = new User({
-                userId : user.userInDiscord.id, 
-                level : 1,
-                isMember : true,
-                memberSince : Date.now()
-            });
-            await databaseController.addUser(dbUser)       
-        }
-        else {
-            currentLevel = dbUser.level; // int level
-        }
-
-        const rankRoleIDOfUser = util.determineRole(currentLevel); // string rank role id 
-        let roleName = server.serverRoles.find(role => role.id === rankRoleIDOfUser).name; // string name of the role
-        const memberRole = user.userInDiscord.roles.cache.find(role => role.id === process.env.memberRoleID);  // a role
-        if (!memberRole) // check if it has members role            
-            roleName = 'no role';
-
-        const messageEmbed = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle(`rank for ${userNickname}`)
-            .setThumbnail(logoIconLink)
-            .addFields(
-                { name: '   name', value: userNickname, inline: true },
-                { name: '\u200B', value: '\u200B', inline: true },
-                { name: '   role', value: roleName, inline: true },
-                { name: '\u200B', value: '\u200B' },
-                { name: '   current Level', value: currentLevel },
-            )
-            .setTimestamp()
-            .setFooter('Nightingale Server', logoIconLink);
-
-        message.channel.send(messageEmbed);
+    else if (!util.hasMemberRole(guildUser)) {
+        await message.channel.send(`${devMessage}You are removed from this season, please wait until the next ranking season. `);
+        return;
     }
+
+    const currentLevel = dbUser.level; // int level
+    const rankRoleIDOfUser = util.determineRole(currentLevel); // string rank role id 
+    const roleName = server.serverRoles.find(role => role.id === rankRoleIDOfUser).name; // string name of the role
+
+    const messageEmbed = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`${devMessage}rank for ${username}`)
+        .setThumbnail(logoIconLink)
+        .addFields(
+            { name: '   name', value: username, inline: true },
+            { name: '\u200B', value: '\u200B', inline: true },
+            { name: '   role', value: roleName, inline: true },
+            { name: '\u200B', value: '\u200B' },
+            { name: '   current Level', value: currentLevel },
+        )
+        .setTimestamp()
+        .setFooter('Nightingale Server', logoIconLink);
+
+    await message.channel.send(messageEmbed);
+
 }
 
 /**

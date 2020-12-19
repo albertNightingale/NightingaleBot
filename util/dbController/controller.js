@@ -54,7 +54,7 @@ exports.derankAll = () => {
     User.updateMany( { level: {$gte: 1} } , { level : 1, isMember : true }, 
         function (err, docs) {
             if (err) console.log(err);
-            else console.log('deranked', docs);
+            else console.log('deranked all', docs);
         }
     );
 }
@@ -68,7 +68,6 @@ exports.derankOne = (id) => {
         }
     );
 }
-
 
 // find a user by id
 exports.findUser = async (id) => {

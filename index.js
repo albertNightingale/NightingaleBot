@@ -13,7 +13,9 @@ const dbseeding = require('./util/dbController/dbseeding');
 
 // file stream for command files reading
 const fs = require('fs'); 
-const path = require('path');
+
+// utility
+const util = require('./util/util')
 
 // command prefix 
 const prefix = '!';
@@ -46,7 +48,7 @@ client
     const { attachments, args, normalizedCommand } = processMessage(message);
     executeCommand(normalizedCommand, message, args, attachments)
     .then()
-    .catch(err => console.log(err))
+    .catch(err => console.log(err));
 });
 
 /// validating the message
@@ -58,15 +60,6 @@ function validateMessage(message)
   
     if (message.author.bot)         // if the message author is not a bot
         return false;    
-    
-    /*
-        // if it is not mentioning the bot. 
-        const messageMentionMembers = message.mentions.members;
-        const isNotMentioningBot = ( messageMentionMembers.size===0 || 
-            messageMentionMembers.filter(member => member.id === client.user.id).size===0 ); 
-        if (isNotMentioningBot) 
-            return false;
-    */
 
     // if the message content does not start with the prefix (not a command). 
     if (!message.content.includes(prefix)) 
@@ -111,6 +104,9 @@ async function executeCommand(normalizedCommand, message, args, attachments)
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
         case '!myrank': 
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
+            break;
+        case '!reset-rank': 
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments); 
             break;
         default: 

@@ -16,49 +16,36 @@ const User = require('../../models/discordUser');
 const util = require('../../util/util');
 const databaseController = require('../../util/dbController/controller');
 
-async function levelUp(message, args, attachments)
-{
+async function levelUp(message, args, attachments) {
     if (!util.hasAdminPermission(message)) return;
-    
     const argumentResponse = await processArguments(message, args);
-    if (argumentResponse)
-    {
-        let previousLevel = 0; 
-        let currentLevel = 0;
-        const guildUser = argumentResponse.userInDiscord;
-        let dbUser = argumentResponse.userInDB;
 
-        if (!dbUser) // database does not have userInDB, create a row in database
-        {
-            previousLevel = 1;
-            currentLevel = 1 + argumentResponse.levelRequested;
-            dbUser = new User({
-                userId : guildUser.id, 
-                level : currentLevel,
-                isMember : true,
-                memberSince : Date.now()
-            });
-            await databaseController.addUser(dbUser)       
-        }
-        else 
-        {
-            previousLevel = dbUser.level;
-            currentLevel = previousLevel + argumentResponse.levelRequested;
-            await databaseController.levelUp(dbUser.userId, argumentResponse.levelRequested);
-        }
+    if (!argumentResponse) return;
 
-        // after level up, check if the current level is matching the right role
-        const roleBefore = util.determineRole(previousLevel);
-        const roleNow = util.determineRole(currentLevel);
-        await guildUser.roles.remove(roleBefore);
-        await guildUser.roles.add(roleNow);
+    const guildUser = argumentResponse.userInDiscord;
+    const dbUser = argumentResponse.userInDB;
 
-        const hasMemberRole = guildUser.roles.cache.find( role => role.id === process.env.memberRoleID ); 
-        if (!hasMemberRole) // check if it has members role            
-            await guildUser.roles.add(process.env.memberRoleID ); // remove the member role
-        
-        await message.channel.send(`leveled ${guildUser.nickname} up to ${currentLevel} for ${argumentResponse.levelUpReason}`);
+    // database does not have userInDB or the discord member does not have member role, the member cannot participate
+    if (!dbUser || !util.hasMemberRole(guildUser)) {
+        await message.channel.send(`${devMessage}this user cannot participate until the next ranking season`);
+        return;
     }
+
+    const previousLevel = dbUser.level;
+    const currentLevel = previousLevel + argumentResponse.levelRequested;
+    // level the user up inside of the database
+    await databaseController.levelUp(dbUser.userId, argumentResponse.levelRequested);
+
+    // after level up, check if the current level is matching the right role
+    const roleBefore = util.determineRole(previousLevel);
+    const isMemberRole = (roleBefore === process.env.memberRoleID); // is the user in memberRole
+    if (!isMemberRole) // if is not non-member role, then remove that role    
+        await guildUser.roles.remove(roleBefore); // remove the row before
+
+    const roleNow = util.determineRole(currentLevel);
+    await guildUser.roles.add(roleNow); // add the row now
+
+    await message.channel.send(`${devMessage}leveled ${guildUser.displayName} up to ${currentLevel} for ${argumentResponse.levelUpReason}`);
 }
 
 /**
@@ -67,19 +54,15 @@ async function levelUp(message, args, attachments)
  * @param {Array<String>} args the argument content
  * @returns {Object} an object that holds the userInDiscord, userInDB, levelRequested, levelUpReason
  */
-async function processArguments (message, args)
-{
-    if (args === undefined || args.length < 3)
-    { 
+async function processArguments(message, args) {
+    if (args === undefined || args.length < 3) {
         console.log(`${devMessage}No arguments passed`);
         return undefined;
     }
-    else 
-    {  // the user list of the target
-        const targetsArray = message.mentions.members.map( user => user );
+    else {  // the user list of the target
+        const targetsArray = message.mentions.members.map(user => user);
 
-        if (targetsArray.length > 0)
-        {
+        if (targetsArray.length > 0) {
             const user = targetsArray[0];
             const levelRequested = parseInt(args[0]);
             if (Number.isNaN(levelRequested)) levelRequested = 1;
@@ -95,9 +78,6 @@ async function processArguments (message, args)
         return undefined;
     }
 }
-
-
-
 
 /**********          Export          **********/
 module.exports = {

@@ -16,7 +16,7 @@ async function resetRank(message, args, attachments)
 {
     if(!util.hasAdminPermission(message)) return;
 
-    const server = util.getGuildInformation(message);
+    const server = await util.getGuildInformation(message);
 
     //// for every user in the server
     // check if that user exists in database, 
@@ -25,35 +25,38 @@ async function resetRank(message, args, attachments)
     //      if the user have any non-member rank roles, remove them as well
 
     const memberList = server.serverMembers;
+    console.log('member count, ', memberList.length);
 
     for(let idx = 0; idx < memberList.length; idx++)
     {
         const member = memberList[idx];
-        let userFromDB = databaseController.findUser(member.id); 
+        let userFromDB = await databaseController.findUser(member.id); 
         if (!userFromDB) // if the model does not exist in the databse, add that user in
         {
+            console.log('not found: ' + member.id)
             userFromDB = new User({
-                userId : user.userInDiscord.id, 
+                userId : member.id, 
                 level : 1,
                 isMember : true,
                 memberSince : Date.now()
             });
             await databaseController.addUser(userFromDB)    
         }
+        else 
+        {
+            const currentLevel = userFromDB.level;
+            const rankRoleID = util.determineRole(currentLevel)
+            const isMemberRole = (rankRoleID === process.env.memberRoleID); // is the user in memberRole
+            if (!isMemberRole) // if is non-member role, then remove that role           
+                await member.roles.remove( rankRoleID ); // remove the member role
+        }
         
-        const currentLevel = userFromDB.level;
-        const rankRoleID = util.determineRole(currentLevel)
-        const isMemberRole = rankRoleID === process.env.memberRoleID; // is the user in memberRole
-        if (!isMemberRole) // if is non-member role, then remove that role           
-            await member.roles.remove( rankRoleID ); // remove the member role
-        
-        const hasMemberRole = member.roles.cache.find( role => role.id === process.env.memberRoleID );  // a role object
-        if (!hasMemberRole) // if not have member role, then add
-            await guildUser.roles.add(process.env.memberRoleID ); // remove the member role
+        if (!util.hasMemberRole(member)) // if not have member role, then add
+            await member.roles.add(process.env.memberRoleID ); // remove the member role
     }
 
     await databaseController.derankAll();
-    await message.channel.send('resetted rank for everyone!'); 
+    await message.channel.send(`${devMessage}resetted rank for everyone!`); 
 }
 
 
