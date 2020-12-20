@@ -22,14 +22,12 @@ const prefix = '!';
 
 ////// set up the command based files
 client.commands = new Discord.Collection();
-basicFileDir = './commands/basic/';
+const basicFileDir = './commands/basic/';
 setCommandFiles(basicFileDir);
-devastFileDir = './commands/devast/';
+const devastFileDir = './commands/devast/';
 setCommandFiles(devastFileDir);
-rankFileDir = './commands/rank/';
+const rankFileDir = './commands/rank/';
 setCommandFiles(rankFileDir);
-roleManagementDir = './commands/role/';
-setCommandFiles(roleManagementDir);
 
 ////// connecting DB
 const connectInfo = process.env.DBConnectionString; 
