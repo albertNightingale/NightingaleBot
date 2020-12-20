@@ -32,7 +32,7 @@ roleManagementDir = './commands/role/';
 setCommandFiles(roleManagementDir);
 
 ////// connecting DB
-const connectInfo = 'mongodb://localhost:DiscordBot/DiscordUser';
+const connectInfo = process.env.DBConnectionString; 
 connectDB(); 
 
 //// user log in
