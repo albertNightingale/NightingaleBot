@@ -8,7 +8,7 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
  */
 exports.hasAdminPermission = function(message)
 {
-    const modRoles = process.env.devastModRoleID.split(/,/)
+    const modRoles = process.env.discordModRoleID.split(/,/)
     let rolesWithPermission = message.member.roles.cache.find(role => modRoles.includes(role.id))
 
     if (!rolesWithPermission)
