@@ -92,3 +92,19 @@ exports.exist = async () => {
 
     return doesExist;
 }
+
+/**
+ * Find count number of roles by the level in descending order
+ * @param {Number} count 
+ */
+exports.findByLvl = async (count) => {
+    User.find().where();
+}
+
+/**
+ * Level up everyone by a certain level
+ */
+exports.levelUpAll = async (level) => {
+
+}
+

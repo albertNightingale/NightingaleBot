@@ -63,7 +63,7 @@ This bot does the following:
     - It will reset the rank
 
 ##### Logistics
-- Using MongoDB to keep track of zoom links.
+- Using MongoDB to keep track of discord member's link.
 
 
 
