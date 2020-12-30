@@ -94,17 +94,13 @@ exports.exist = async () => {
 }
 
 /**
- * Find count number of roles by the level in descending order
+ * Find count number of people by the level in descending order
  * @param {Number} count 
  */
 exports.findByLvl = async (count) => {
-    User.find().where();
-}
+    const listOfData = await User.find().sort({ level: 'desc' }).limit(count);
 
-/**
- * Level up everyone by a certain level
- */
-exports.levelUpAll = async (level) => {
-
+    console.log(listOfData);
+    return listOfData;
 }
 

@@ -35,20 +35,24 @@ exports.hasMemberRole = function (guildUser) {
 * @returns {String} current_role of the user in string
 */
 exports.determineRole = function (level) {
-   if (level >= 80)
-       return process.env.level80RoleID;
-   else if (level >= 60)
-       return process.env.level60RoleID;
-   else if (level >= 40)
-       return process.env.level40RoleID;
-   else if (level >= 30)
-       return process.env.level30RoleID;
-   else if (level >= 20)
-       return process.env.level20RoleID;
-   else if (level >= 10)
-       return process.env.level10RoleID;
-   else 
-       return process.env.memberRoleID;
+    if (level >= 160)
+        return process.env.level160RoleID;
+    else if (level >= 120)
+        return process.env.level120RoleID;
+    else if (level >= 90)
+        return process.env.level90RoleID;
+    else if (level >= 70)
+        return process.env.level70RoleID;
+    else if (level >= 50)
+        return process.env.level50RoleID;
+    else if (level >= 30)
+        return process.env.level30RoleID;
+    else if (level >= 20)
+        return process.env.level20RoleID;
+    else if (level >= 10)
+        return process.env.level10RoleID;
+    else 
+        return process.env.memberRoleID;
 }
 
 /**

@@ -41,7 +41,7 @@ logIn();
 client
     .once('ready', () => {
         console.log("logged in as " + client.user.username);
-        console.log(typeof theGuild());
+        exports.theGuild();
     })
     .on('ready', () => {
         executeTasks();
@@ -68,7 +68,10 @@ client
         channel.send(`Sorry to see you go, ${member} you joined since ${member.joinedAt.toDateString()}`);
     });
 
-const theGuild = (() => {
+/**
+ * 
+ */
+exports.theGuild = (() => {
     let guild = undefined;
 
     return function () {
@@ -94,7 +97,7 @@ function executeTasks()
             if (timer && executeFunc)
             {
                 setInterval(() => {
-                    executeFunc(client);
+                    executeFunc(client).then();
                 }, timer);
             }
         }
@@ -106,11 +109,12 @@ function executeTasks()
 function validateMessage(message) {
     // Ignore messages that aren't from a guild
     if (!message.guild)
-        return;
-
-    if (message.author.bot)         // if the message author is not a bot
         return false;
 
+        /*
+    if (message.author.bot)         // if the message author is not a bot
+        return false;
+        */
     // if the message content does not start with the prefix (not a command). 
     if (!message.content.includes(prefix))
         return false;
@@ -155,6 +159,9 @@ async function executeCommand(normalizedCommand, message, args, attachments) {
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
         case '!reset-rank':
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
+            break;
+        case '!rankof':
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
         default:
