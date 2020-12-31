@@ -16,7 +16,7 @@ async function resetRank(message, args, attachments)
 {
     if(!util.hasAdminPermission(message)) return;
 
-    const server = await util.getGuildInformation(message);
+    const server = await util.getGuildInformation();
 
     //// for every user in the server
     // check if that user exists in database, 

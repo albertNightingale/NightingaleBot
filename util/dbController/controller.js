@@ -104,3 +104,10 @@ exports.findByLvl = async (count) => {
     return listOfData;
 }
 
+/**
+ * delete the user
+ * @param {String} id 
+ */
+exports.deleteUser = async (id) => {
+    await User.deleteOne({ userId: id });
+}

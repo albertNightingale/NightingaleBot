@@ -2,6 +2,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
 
+const index = require('../index');
+
 /**
  * check if the message author has the permission to send this message
  * @param {Message} message from discord
@@ -60,22 +62,14 @@ exports.determineRole = function (level) {
  * all the guild informations needed
  * @param {Discord.Message} message 
  */
-exports.getGuildInformation = async function (message)
+exports.getGuildInformation = async function ()
 {
-    const guild = message.guild;
+    const guild = index.theGuild();
 
     const serverName = guild.name; // string
     const serverOwner = guild.name; // GuildMember 
     
-    const serverChannels = guild.channels.cache.map(channel => {
-        return {
-            id : channel.id, // string id of the channel
-            name : channel.name, // string name of the channel
-            createdAt : channel.createdAt, // Date when the channel is created
-            channelType: channel.type, // text of the type of the channel
-            members: channel.members.map( member => member ) // a list of GuildMember
-        }
-    });
+    const serverChannels = guild.channels.cache.map(channel => channel );
 
     // an array of reconstructed roles object
     const serverRolesMap = new Map();

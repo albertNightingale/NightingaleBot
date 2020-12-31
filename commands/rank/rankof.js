@@ -14,11 +14,10 @@ module.exports = {
     execute: rankOf
 }
 
-
 async function rankOf(message, args, attachments)
 {
     const member = await processArgument(message, args);
-    const server = await util.getGuildInformation(message);
+    const server = await util.getGuildInformation();
 
     if (member)
     {
@@ -55,7 +54,7 @@ async function rankOf(message, args, attachments)
         }
         else 
         {
-            await message.channel.send(`${devMessage} this member is not a part of the participants of this season`);
+            await message.channel.send(`${devMessage} this member is not a member of the participants of this season`);
         }
     }
 }

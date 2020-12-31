@@ -25,7 +25,8 @@ const prefix = '!';
 const basicFileDir = './commands/basic/';
 const devastFileDir = './commands/devast/';
 const rankFileDir = './commands/rank/';
-const commandsMap = new Map([...setFiles(basicFileDir), ...setFiles(devastFileDir), ...setFiles(rankFileDir)]);
+const modFileDir = './commands/mod/';
+const commandsMap = new Map([...setFiles(basicFileDir), ...setFiles(devastFileDir), ...setFiles(rankFileDir), ...setFiles(modFileDir)]);
 client.commands = commandsMap;
 const taskMap = setFiles('./tasks/');
 
@@ -56,17 +57,49 @@ client
             .catch(err => console.log(err));
     })
     .on('guildMemberAdd', member => {
-        const channel = member.guild.channels.cache.find(ch => ch.name.includes('welcome'));
-        if (!channel) return;
-        // Send the message, mentioning the member
-        channel.send(`Welcome to the server, ${member} your landing time is ${member.joinedAt.toDateString()}`);
+        onAdding(member).then().catch(err => console.log(err));
     })
     .on('guildMemberRemove', member => {
-        const channel = member.guild.channels.cache.find(ch => ch.name.includes('welcome'));
-        if (!channel) return;
-        // Send the message, mentioning the member
-        channel.send(`Sorry to see you go, ${member} you joined since ${member.joinedAt.toDateString()}`);
+        onLeaving(member).then().catch(err => console.log(err));
     });
+
+
+/**
+ * on member joining the guild
+ * 
+ * 1. send welcome message to welcome channel
+ * 2. send status message to the status channel, indicating one member joining
+ * @param {Discord.GuildMember} member 
+ */
+async function onAdding(member) {
+    // send a welcome message to the welcome channel
+    const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForWelcome);
+    if (!welcomeChannel) await welcomeChannel.send(`channel ${process.env.channelForWelcome} does not exist`);
+    // Send the message, mentioning the member
+    await welcomeChannel.send(`Welcome to the server, ${member} your landing time is ${member.joinedAt.toDateString()}`);
+
+
+    // send a status message to the status channel
+    const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
+    if (!statusChannel) await statusChannel.send(`channel ${process.env.channelForServerStatus} does not exist`);
+    // Send the message, mentioning the member
+    await statusChannel.send(`${member} joined on ${member.joinedAt.toDateString()}`);
+}
+
+
+/**
+ * on member leaving the guild
+ * 
+ * 1. send a status message to the status channel
+ * @param {Discord.GuildMember} member 
+ */
+async function onLeaving(member) {
+
+    const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
+    if (!statusChannel) await statusChannel.send(`channel ${process.env.channelForServerStatus} does not exist`);
+    // Send the message, mentioning the member
+    await statusChannel.send(`${member} left on ${member.joinedAt.toDateString()} ${member.joinedAt.toTimeString()}`);
+}
 
 /**
  * 
@@ -76,7 +109,7 @@ exports.theGuild = (() => {
 
     return function () {
         if (guild === undefined) {
-            console.log('ONLY RUN IT ONCE AND IT WILL WORK IN THE REST'); 
+            console.log('ONLY RUN IT ONCE AND IT WILL WORK IN THE REST');
             guild = client.guilds.cache.find(guild => guild.id === process.env.serverID);
         }
         return guild;
@@ -84,18 +117,15 @@ exports.theGuild = (() => {
 })();
 
 /**
- * for each task in the list
+ * for each task in the list, execute them
  */
-function executeTasks()
-{
-    taskMap.forEach( (taskObj, taskName) => {
+function executeTasks() {
+    taskMap.forEach((taskObj, taskName) => {
 
-        if (taskObj)
-        {
+        if (taskObj) {
             const timer = taskObj.executeIntervals;
             const executeFunc = taskObj.execute;
-            if (timer && executeFunc)
-            {
+            if (timer && executeFunc) {
                 setInterval(() => {
                     executeFunc(client).then();
                 }, timer);
@@ -105,16 +135,20 @@ function executeTasks()
 
 }
 
-/// validating the message
+/****
+ * Validating the message
+ * @param {Discord.Message} message 
+ * @returns {Boolean} true if the message is validated, false otherwise.
+ */
 function validateMessage(message) {
     // Ignore messages that aren't from a guild
     if (!message.guild)
         return false;
 
-        /*
-    if (message.author.bot)         // if the message author is not a bot
-        return false;
-        */
+    /*
+if (message.author.bot)         // if the message author is not a bot
+    return false;
+    */
     // if the message content does not start with the prefix (not a command). 
     if (!message.content.includes(prefix))
         return false;
@@ -164,6 +198,9 @@ async function executeCommand(normalizedCommand, message, args, attachments) {
         case '!rankof':
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
+        case '!ban':
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
+            break;
         default:
             console.log("invalid command: " + normalizedCommand);
     };
@@ -191,14 +228,13 @@ function setFiles(fileDirectory) {
         const files = fs.readdirSync(fileDirectory).filter(file => file.endsWith('.js'));
         files.forEach(file => {
             const aFile = require(`${fileDirectory}${file}`);
-            if (aFile && aFile.name)
-            {
+            if (aFile && aFile.name) {
                 map.set(aFile.name, aFile);
             }
             else {
                 console.log('aFile has no names in its property')
             }
-        });   
+        });
     }
     catch (err) {
         console.error(err);

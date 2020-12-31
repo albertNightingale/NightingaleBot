@@ -16,7 +16,7 @@ const databaseController = require('../../util/dbController/controller')
 async function myrank(message, args, attachments) {
 
     const user = await processArguments(message, args);
-    const server = await util.getGuildInformation(message);
+    const server = await util.getGuildInformation();
 
     if (!user) return;
 
