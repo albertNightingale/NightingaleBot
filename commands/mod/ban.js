@@ -5,15 +5,14 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 const dbController = require('../../util/dbController/controller');
 const util = require('../../util/util');
 const Discord = require('discord.js');
-const logoIconLink = require('../../config')['logoIconLink'];
 
 
-module.exports = {
-    name: 'ban',
-    description: 'ban a player',
-    execute: ban
-}
-
+/**
+ * 
+ * @param {Discord.Message} message 
+ * @param {String[]} args 
+ * @param {File} attachment 
+ */
 async function ban(message, args, attachment) {
 
     if (util.hasAdminPermission(message))
@@ -40,7 +39,6 @@ async function ban(message, args, attachment) {
             }
             else 
             {
-                console.log('bantime', argument.banTime)
                 await banningTarget.ban({
                     days: argument.banTime,
                     reason: argument.banReason
@@ -55,7 +53,7 @@ async function ban(message, args, attachment) {
             const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
             if (!statusChannel) 
             {
-                await statusChannel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
+                await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
             }
             else 
             {
@@ -69,6 +67,11 @@ async function ban(message, args, attachment) {
     }
 }
 
+/**
+ * 
+ * @param {Discord.Message} message 
+ * @param {String[]} args 
+ */
 async function processArguments(message, args) 
 {
     const isArgsInvalidated = (args === undefined || args.length < 3);
@@ -117,7 +120,7 @@ function processBanTime(time)
 /**
  * 
  * @param {Number} time 
- * @param {string[]} args 
+ * @param {String[]} args 
  */
 function processBanReason(time, args)
 {
@@ -128,4 +131,10 @@ function processBanReason(time, args)
     else {
         return args.slice(1).join(' ');
     }
+}
+
+module.exports = {
+    name: 'ban',
+    description: 'ban a player',
+    execute: ban
 }

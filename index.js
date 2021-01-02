@@ -74,16 +74,25 @@ client
 async function onAdding(member) {
     // send a welcome message to the welcome channel
     const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForWelcome);
-    if (!welcomeChannel) await welcomeChannel.send(`channel ${process.env.channelForWelcome} does not exist`);
-    // Send the message, mentioning the member
-    await welcomeChannel.send(`Welcome to the server, ${member} your landing time is ${member.joinedAt.toDateString()}`);
+    if (!welcomeChannel) {
+        console.error('welcome channel does not exist ');
+    }
+    else     // Send the message, mentioning the member
+    {       
+        await welcomeChannel.send(`Welcome to the server, ${member} your landing time is ${member.joinedAt.toDateString()}`);
+    }
 
 
     // send a status message to the status channel
     const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
-    if (!statusChannel) await statusChannel.send(`channel ${process.env.channelForServerStatus} does not exist`);
-    // Send the message, mentioning the member
-    await statusChannel.send(`${member} joined on ${member.joinedAt.toDateString()}`);
+    if (!statusChannel) {
+        console.error('status channel does not exist ');
+    }
+    else     // Send the message to the status channel, mentioning the member
+    {
+        await statusChannel.send(`${member} joined on ${member.joinedAt.toDateString()}`);
+    }
+
 }
 
 
@@ -96,9 +105,13 @@ async function onAdding(member) {
 async function onLeaving(member) {
 
     const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
-    if (!statusChannel) await statusChannel.send(`channel ${process.env.channelForServerStatus} does not exist`);
-    // Send the message, mentioning the member
-    await statusChannel.send(`${member} left on ${member.joinedAt.toDateString()} ${member.joinedAt.toTimeString()}`);
+    if (!statusChannel) {
+        console.error('status channel does not exist ');
+    }   
+    else    // Send the message to the status channel, mentioning the member
+    {
+        await statusChannel.send(`${member} left on ${member.joinedAt.toDateString()} ${member.joinedAt.toTimeString()}`);
+    }    
 }
 
 /**
