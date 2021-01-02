@@ -1,10 +1,10 @@
+const dotenv = require('dotenv');
+dotenv.config();
+const devMessage = process.env.Dev ? "Dev mode: " : ""
 
-
-module.exports = {
-    name: 'mute',
-    description: 'mute a player',
-    execute: mute
-}
+const User = require('../../models/discordUser');
+const util = require('../../util/util');
+const databaseController = require('../../util/dbController/controller');
 
 /**
  * 
@@ -132,4 +132,10 @@ function processMuteReason(time, args)
     else {
         return args.slice(1).join(' ');
     }
+}
+
+module.exports = {
+    name: 'mute',
+    description: 'mute a player',
+    execute: mute
 }
