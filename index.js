@@ -31,7 +31,7 @@ client.commands = commandsMap;
 const taskMap = setFiles('./tasks/');
 
 ////// connecting DB
-const connectInfo = process.env.Dev ? "mongodb://localhost:DiscordUser/DiscordUser" : process.env.DBConnectionString;
+const connectInfo = process.env.DBConnectionString;
 connectDB();
 
 //// user log in
@@ -200,9 +200,6 @@ async function executeCommand(normalizedCommand, message, args, attachments) {
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
         case '!levelup':
-            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
-            break;
-        case '!myrank':
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
         case '!reset-rank':
