@@ -7,23 +7,29 @@ const util = require('../../util/util');
 const databaseController = require('../../util/dbController/controller');
 
 async function warn(message, args, attachment) {
-    const argument = await processArguments(message, args);
-    if (argument)
+
+    if (util.hasAdminPermission(message))
     {
-        const author = message.author;
-        await message.send(`${devMessage} ${argument.userInDiscord} is warned for ${argument.warnReason}`);
-
-        const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
-        if (!statusChannel) 
+        const server = await util.getGuildInformation();
+        const argument = await processArguments(message, args);
+        if (argument)
         {
-            await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
+            const author = message.author;
+            await message.channel.send(`${devMessage} ${argument.userInDiscord} is warned for ${argument.warnReason}`);
+    
+            const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
+            if (!statusChannel) 
+            {
+                await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
+            }
+            else 
+            {
+                await statusChannel.send(`${devMessage} ${Date.now()} : ${author} warned${argument.userInDiscord} for ${argument.warnReason}`);
+            }
+    
+            // mute one hour
+            await statusChannel.send(`!mute 1 ${argument.warnReason} ${argument.userInDiscord}`);
         }
-        else 
-        {
-            await statusChannel.send(`${devMessage} ${Date.now()} : ${author} warned${argument.userInDiscord} for ${argument.warnReason}`);
-        }
-
-        await statusChannel.send(`!mute 1 ${warnReason} ${argument.userInDiscord}`);
     }
 }
 
@@ -34,7 +40,7 @@ async function warn(message, args, attachment) {
  */
 async function processArguments(message, args) 
 {
-    const isArgsInvalidated = (args === undefined || args.length < 3);
+    const isArgsInvalidated = (args === undefined || args.length < 1);
     if (isArgsInvalidated) {
         console.log(`${devMessage}No arguments passed`);
         return undefined;
@@ -43,7 +49,7 @@ async function processArguments(message, args)
     const mentions = message.mentions.members.array();
     if (mentions && mentions.length > 0) {
         const warnTarget = mentions[0];
-        const warnReason = args.join(' ');
+        const warnReason = processWarnReason(args);
 
         return {
             userInDiscord: warnTarget,
@@ -55,6 +61,20 @@ async function processArguments(message, args)
         console.log(`${devMessage}No mentions passed`);
         return undefined;
     }
+}
+
+/**
+ * 
+ * @param {String[]} args 
+ */
+function processWarnReason(args)
+{
+    const arguments = args.map( arg => {
+        if (!arg.includes('@'))
+            return arg;
+    });
+
+    return arguments.join(' ');
 }
 
 module.exports = {

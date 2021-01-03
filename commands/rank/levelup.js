@@ -69,7 +69,7 @@ async function processArguments(message, args) {
             const userInDB = await databaseController.findUser(user.id);
 
             return ({
-                ÍÎ: user, // GuildMember object in Discordjs
+                userInDiscord: user, // GuildMember object in Discordjs
                 userInDB: userInDB, // user model in database model
                 levelRequested: levelRequested, // string level requested
                 levelUpReason: args[1], // reason for level up

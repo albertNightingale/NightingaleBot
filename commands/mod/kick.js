@@ -55,7 +55,7 @@ async function kick(message, args, attachment) {
  */
 async function processArguments(message, args) 
 {
-    const isArgsInvalidated = (args === undefined || args.length < 3);
+    const isArgsInvalidated = (args === undefined || args.length < 1);
     if (isArgsInvalidated) {
         console.log(`${devMessage}No arguments passed`);
     }
@@ -65,7 +65,7 @@ async function processArguments(message, args)
         const kickTarget = mentions[0];
 
         const kickTargetID = kickTarget.id;
-        const kickReason = args.join(' ');
+        const kickReason = processKickReason(args);
 
         // go to db and remove the target
         await dbController.deleteUser(kickTargetID);
@@ -81,6 +81,14 @@ async function processArguments(message, args)
     }
 
     return undefined;
+}
+
+function processKickReason(args) {
+    const arguments = args.map( arg => {
+        if (!arg.includes('@'))
+            return arg;
+    });
+    return arguments.join(' ');
 }
 
 module.exports = {

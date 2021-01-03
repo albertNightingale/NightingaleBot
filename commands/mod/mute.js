@@ -33,7 +33,7 @@ async function mute(message, args, attachment) {
 
         await muteTarget.roles.add(muteRoleID);
 
-        await message.channel.send(`${devMessage}muted ${muteTarget} for ${muteTime} due to ${muteReason}`);
+        await message.channel.send(`${devMessage}muted ${muteTarget} for ${muteTime} hours due to ${muteReason}`);
 
         const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
         if (!statusChannel) 
@@ -42,22 +42,20 @@ async function mute(message, args, attachment) {
         }
         else 
         {
-            await statusChannel.send(`${devMessage} ${Date.now()} : ${mutedBy} muted${muteTarget} for ${muteTime} due to ${muteReason}, 
+            await statusChannel.send(`${devMessage} ${Date.now()} : ${mutedBy} muted${muteTarget} for ${muteTime} hours due to ${muteReason}, 
                                     the mute will end on ${whenMuteEnd(muteTime)}`);
         }
 
         if (muteTime !== 0)
         {
-            const muteTimeInMilliseconds = muteTime * 60 * 60 * 1000;
-            
-            const unmute = function() {
-                muteTarget.roles.remove(muteRoleID)
-                .then(res => console.log(`unmuted for ${muteRoleID} `))
-                .catch(err => console.error(err));
-            }
+            const muteTimeInMilliseconds = muteTime * 1000 * 60 * 60;
 
             // set a timer to await
-            setInterval(unmute, muteTimeInMilliseconds);
+            setTimeout(() => {
+                muteTarget.roles.remove(muteRoleID)
+                .then(res => console.log(`${new Date(Date.now())} unmuted for ${muteRoleID} `))
+                .catch(err => console.error(err));
+            }, muteTimeInMilliseconds);
         }
     }
 }
@@ -80,7 +78,7 @@ function whenMuteEnd(muteTime)
  */
 async function processArguments(message, args) 
 {
-    const isArgsInvalidated = (args === undefined || args.length < 3);
+    const isArgsInvalidated = (args === undefined || args.length < 1);
     if (isArgsInvalidated) {
         console.log(`${devMessage}No arguments passed`);
     }
@@ -89,7 +87,7 @@ async function processArguments(message, args)
     if (mentions && mentions.length > 0) {
         const muteTarget = mentions[0];
         const muteTime = isArgsInvalidated ? 0 : processMuteTime(args[0]);
-        const muteReason = isArgsInvalidated ? 'No Reason' : processMuteReason(banTime, args);
+        const muteReason = processMuteReason(muteTime, args);
 
         return {
             userInDiscord: muteTarget,
@@ -125,12 +123,16 @@ function processMuteTime(time)
  */
 function processMuteReason(time, args)
 {
+    const arguments = args.map( arg => {
+        if (!arg.includes('@'))
+            return arg;
+    });
     if (time === 0)
     {
-        return args.join(' ');
+        return arguments.join(' ');
     }
     else {
-        return args.slice(1).join(' ');
+        return arguments.slice(1).join(' ');
     }
 }
 

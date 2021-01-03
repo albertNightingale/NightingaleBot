@@ -214,6 +214,15 @@ async function executeCommand(normalizedCommand, message, args, attachments) {
         case '!ban':
             await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
             break;
+        case '!mute':
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
+            break;
+        case '!kick':
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
+            break;
+        case '!warn':
+            await client.commands.get(normalizedCommand.slice(prefix.length)).execute(message, args, attachments);
+            break;
         default:
             console.log("invalid command: " + normalizedCommand);
     };

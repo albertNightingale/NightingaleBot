@@ -74,7 +74,7 @@ async function ban(message, args, attachment) {
  */
 async function processArguments(message, args) 
 {
-    const isArgsInvalidated = (args === undefined || args.length < 3);
+    const isArgsInvalidated = (args === undefined || args.length < 1);
     if (isArgsInvalidated) {
         console.log(`${devMessage}No arguments passed`);
     }
@@ -85,7 +85,7 @@ async function processArguments(message, args)
 
         const banTargetID = banTarget.id;
         const banTime = isArgsInvalidated ? 0 : processBanTime(args[0]);
-        const banReason = isArgsInvalidated ? 'No Reason' : processBanReason(banTime, args);
+        const banReason = processBanReason(banTime, args);
 
         // go to db and remove the target
         await dbController.deleteUser(banTargetID);
@@ -124,12 +124,16 @@ function processBanTime(time)
  */
 function processBanReason(time, args)
 {
+    const arguments = args.map( arg => {
+        if (!arg.includes('@'))
+            return arg;
+    });
     if (time === 0)
     {
-        return args.join(' ');
+        return arguments.join(' ');
     }
     else {
-        return args.slice(1).join(' ');
+        return arguments.slice(1).join(' ');
     }
 }
 
