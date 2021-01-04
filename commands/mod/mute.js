@@ -4,6 +4,7 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const User = require('../../models/discordUser');
 const util = require('../../util/util');
+const utility = require('../utility/utility');
 const databaseController = require('../../util/dbController/controller');
 
 /**
@@ -16,7 +17,7 @@ async function mute(message, args, attachment) {
     if (util.hasAdminPermission(message))
     {
         const server = await util.getGuildInformation();
-        const argument = await processArguments(message, args);
+        const argument = await utility.processArguments(message, args, 1);
 
         if (!argument) 
         {
@@ -28,8 +29,8 @@ async function mute(message, args, attachment) {
 
         const muteRoleID = process.env.muteRoleID;
         const muteTarget = argument.userInDiscord;
-        const muteTime = argument.muteTime;
-        const muteReason = argument.muteReason;
+        const muteTime = argument.time;
+        const muteReason = argument.reason;
 
         await muteTarget.roles.add(muteRoleID);
 
@@ -42,8 +43,8 @@ async function mute(message, args, attachment) {
         }
         else 
         {
-            await statusChannel.send(`${devMessage} ${Date.now()} : ${mutedBy} muted${muteTarget} for ${muteTime} hours due to ${muteReason}, 
-                                    the mute will end on ${whenMuteEnd(muteTime)}`);
+            await statusChannel.send(`.\n\nMEMBER MUTED: ${devMessage} ${Date.now()} : ${mutedBy} muted${muteTarget} for ${muteTime} hours due to ${muteReason}, 
+                                    the mute will end on ${whenMuteEnd(muteTime)}\n\n.`);
         }
 
         if (muteTime !== 0)
@@ -69,71 +70,6 @@ function whenMuteEnd(muteTime)
     const now = Date.now();
     const endingTime = new Date(now + muteTime * 60 * 60 * 1000);
     return endingTime;
-}
-
-/**
- * 
- * @param {Discord.Message} message 
- * @param {String[]} args 
- */
-async function processArguments(message, args) 
-{
-    const isArgsInvalidated = (args === undefined || args.length < 1);
-    if (isArgsInvalidated) {
-        console.log(`${devMessage}No arguments passed`);
-    }
-    
-    const mentions = message.mentions.members.array();
-    if (mentions && mentions.length > 0) {
-        const muteTarget = mentions[0];
-        const muteTime = isArgsInvalidated ? 0 : processMuteTime(args[0]);
-        const muteReason = processMuteReason(muteTime, args);
-
-        return {
-            userInDiscord: muteTarget,
-            userInDB: undefined,
-            muteReason: muteReason,
-            muteTime: muteTime
-        }
-    }
-    else {
-        console.log(`${devMessage}No mentions passed`);
-    }
-
-    return undefined;
-}
-
-/**
- * process the mute time after the argument is passed
- * @param {String} time 
- */
-function processMuteTime(time)
-{
-    const banTime = parseInt(time) 
-    if (Number.isNaN(banTime))
-        return 0;
-    else 
-        return banTime;
-}
-
-/**
- * 
- * @param {Number} time 
- * @param {String[]} args 
- */
-function processMuteReason(time, args)
-{
-    const arguments = args.map( arg => {
-        if (!arg.includes('@'))
-            return arg;
-    });
-    if (time === 0)
-    {
-        return arguments.join(' ');
-    }
-    else {
-        return arguments.slice(1).join(' ');
-    }
 }
 
 module.exports = {

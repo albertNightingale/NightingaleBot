@@ -14,9 +14,11 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const User = require('../../models/discordUser');
 const util = require('../../util/util');
+const utility = require('../utility/utility');
 const databaseController = require('../../util/dbController/controller');
 
 async function levelUp(message, args, attachments) {
+
     if (!util.hasAdminPermission(message)) return;
     const argumentResponse = await processArguments(message, args);
 
@@ -55,7 +57,8 @@ async function levelUp(message, args, attachments) {
  * @returns {Object} an object that holds the userInDiscord, userInDB, levelRequested, levelUpReason
  */
 async function processArguments(message, args) {
-    if (args === undefined || args.length < 3) {
+
+    if (args === undefined || args.length < 1) {
         console.log(`${devMessage}No arguments passed`);
         return undefined;
     }
@@ -64,17 +67,25 @@ async function processArguments(message, args) {
 
         if (targetsArray.length > 0) {
             const user = targetsArray[0];
-            const levelRequested = parseInt(args[0]);
-            if (Number.isNaN(levelRequested)) levelRequested = 1;
+            
+            let levelUpReason = utility.processReasoning(0, args);
+            let levelRequested = parseInt(args[0]);
+            if (Number.isNaN(levelRequested)) 
+            {
+                levelRequested = 1;
+                levelUpReason = utility.processReasoning(1, args);
+            }
+
             const userInDB = await databaseController.findUser(user.id);
 
             return ({
                 userInDiscord: user, // GuildMember object in Discordjs
                 userInDB: userInDB, // user model in database model
                 levelRequested: levelRequested, // string level requested
-                levelUpReason: args[1], // reason for level up
+                levelUpReason: levelUpReason, // reason for level up
             });
         }
+        console.log('here', targetsArray.length);
         return undefined;
     }
 }

@@ -5,13 +5,14 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const dbController = require('../../util/dbController/controller');
 const util = require('../../util/util');
+const utility = require('../utility/utility');
 const Discord = require('discord.js');
 
 async function kick(message, args, attachment) {
     if (util.hasAdminPermission(message))
     {
         const server = await util.getGuildInformation();
-        const argument = await processArguments(message, args);
+        const argument = await utility.processArguments(message, args, 1);
 
         if (!argument) 
         {
@@ -22,12 +23,15 @@ async function kick(message, args, attachment) {
         const kickingTarget = argument.userInDiscord;
         const kickingTargetUsername = kickingTarget.displayName;
         const kickingTargetID = kickingTarget.id;
+        const kickReason = argument.reason;
 
         if (kickingTarget.kickable) // the target can be banned 
         {
-            await kickingTarget.kick(argument.kickReason);
+            await kickingTarget.kick(kickReason);
+            // go to db and remove the target
+            await dbController.deleteUser(kickingTargetID);
 
-            const responseMessage = `${devMessage} ${kickingTarget} with ID ${kickingTargetID} is kicked due to ${argument.kickReason}`;
+            const responseMessage = `${devMessage} ${kickingTarget} with ID ${kickingTargetID} is kicked due to ${kickReason}`;
 
             await message.channel.send(responseMessage);
 
@@ -38,7 +42,7 @@ async function kick(message, args, attachment) {
             }
             else 
             {
-                await statusChannel.send(responseMessage);
+                await statusChannel.send(```.\n\n MEMBER KICKED:${responseMessage} \n\n.```);
             }
         }
         else 
@@ -46,49 +50,6 @@ async function kick(message, args, attachment) {
             await message.channel.send(`${devMessage} kickable failed as ${kickingTargetUsername} with ID ${kickingTargetID} is unkickable`);
         }
     }
-}
-
-/**
- * 
- * @param {Discord.Message} message 
- * @param {String[]} args 
- */
-async function processArguments(message, args) 
-{
-    const isArgsInvalidated = (args === undefined || args.length < 1);
-    if (isArgsInvalidated) {
-        console.log(`${devMessage}No arguments passed`);
-    }
-    
-    const mentions = message.mentions.members.array();
-    if (mentions && mentions.length > 0) {
-        const kickTarget = mentions[0];
-
-        const kickTargetID = kickTarget.id;
-        const kickReason = processKickReason(args);
-
-        // go to db and remove the target
-        await dbController.deleteUser(kickTargetID);
-
-        return {
-            userInDiscord: kickTarget,
-            userInDB: undefined,
-            kickReason: kickReason,
-        }
-    }
-    else {
-        console.log(`${devMessage}No mentions passed`);
-    }
-
-    return undefined;
-}
-
-function processKickReason(args) {
-    const arguments = args.map( arg => {
-        if (!arg.includes('@'))
-            return arg;
-    });
-    return arguments.join(' ');
 }
 
 module.exports = {

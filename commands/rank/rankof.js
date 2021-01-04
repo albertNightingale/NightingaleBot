@@ -16,6 +16,11 @@ module.exports = {
 
 async function rankOf(message, args, attachments)
 {
+    if (!util.hasMemberRole(message.member))
+    {
+        return;
+    }
+
     const member = await processArgument(message, args);
     const server = await util.getGuildInformation();
 
@@ -45,7 +50,7 @@ async function rankOf(message, args, attachments)
                 .setTimestamp()
                 .setFooter('Nightingale Server', logoIconLink);
 
-                await message.channel.send(messageEmbed);
+                await message.channel.send(devMessage, messageEmbed);
             }
             else 
             {
