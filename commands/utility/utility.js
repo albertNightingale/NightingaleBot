@@ -67,14 +67,32 @@ exports.processReasoning = function(hasNumber, args)
 
 /**
  * 
+ * @param {Date} startTime 
+ * @param {Number} timeSpan in hours
+ */
+exports.whenItEnd = function(startTime, timeSpan)
+{
+    const timesToMiliseconds = 1000 * 60 * 60;
+    return new Date(startTime.getTime() + timesToMiliseconds);
+}
+
+/**
+ * 
  * @param {Number} time 
  * @param {String[]} args 
  */
 function processReason(time, args)
 {
+    const pingDelimiter = '@';
     const arguments = args.map( arg => {
-        if (!arg.includes('@'))
+        if (!arg.startsWith(pingDelimiter))
+        {
+            if (arg.includes(pingDelimiter))
+            {
+                return arg.substr(0, arg.indexOf(pingDelimiter));
+            }
             return arg;
+        }    
     });
     if (time === 0)
     {

@@ -6,6 +6,7 @@ const User = require('../../models/discordUser');
 const util = require('../../util/util');
 const utility = require('../utility/utility');
 const databaseController = require('../../util/dbController/controller');
+const statusME = require('../../util/buildMessageEmbed/statusME')
 
 async function warn(message, args, attachment) {
 
@@ -15,27 +16,13 @@ async function warn(message, args, attachment) {
         const argument = await utility.processArguments(message, args, 1);
         if (argument)
         {
-            const author = message.author;
-            const warnReason = message.reason;
+            const warnReason = argument.reason;
             await message.channel.send(`${devMessage} ${argument.userInDiscord} is warned for ${warnReason}`);
-    
-            const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
-            if (!statusChannel) 
-            {
-                await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
-            }
-            else 
-            {
-                await statusChannel.send(`${devMessage} ${Date.now()} : ${author} warned${argument.userInDiscord} for ${warnReason}`);
-            }
-    
-            // mute one hour
-            await statusChannel.send(`!mute 1 ${warnReason} ${argument.userInDiscord}`);
         }
     }
 }
 module.exports = {
     name: 'warn',
-    description: 'warn a player and mute him for 30 minutes',
+    description: 'warn a player',
     execute: warn
 }

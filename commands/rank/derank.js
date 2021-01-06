@@ -9,6 +9,7 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 const databaseController = require('../../util/dbController/controller');
 
 const util = require('../../util/util');
+const statusME = require('../../util/buildMessageEmbed/statusME');
 
 // !derank @username @username @username
 async function derankHandler(message, args, attachments) {
@@ -18,6 +19,8 @@ async function derankHandler(message, args, attachments) {
     const listOfTargets = await processArguments (message, args);
 
     if (!listOfTargets) return;
+
+    const derankedBy = message.member;
 
     for (let idx = 0; idx < listOfTargets.length; idx++)
     { 
@@ -37,6 +40,8 @@ async function derankHandler(message, args, attachments) {
         await guildUser.roles.remove(roleAsOfNow);
 
         await message.channel.send(`${devMessage}deranked ${guildUser.displayName}`);
+
+        util.sendToStatusChannel(statusME.onMemberDerank(derankedBy, guildUser));
     }
 }
 

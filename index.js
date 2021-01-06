@@ -15,6 +15,7 @@ const fs = require('fs');
 
 // utility file
 const util = require('./util/util')
+const statusME = require('./util/buildMessageEmbed/statusME')
 
 // command prefix 
 const prefix = '!';
@@ -35,11 +36,13 @@ connectDB();
 const client = new Discord.Client(); // initializing a discord bot
 logIn();
 
+///// track of invites
+const guildInvites = new Map();
+
 ///// client event handler
-client
+client 
     .once('ready', () => {
-        console.log("logged in as " + client.user.username);
-        util.getGuildInformation().then().catch(err => console.error(err));
+        uponReady().then().catch(err => console.error(err));
     })
     .on('ready', () => {
         executeTasks();
@@ -62,6 +65,12 @@ client
     })
     .on('guildMemberRemove', member => {
         onLeaving(member).then().catch(err => console.log(err));
+    })
+    .on('inviteCreate', invite => {
+        guildInvites.set(invite.code, invite);
+    })
+    .on('inviteDelete', invite => {
+        guildInvites.delete(invite.code);
     });
 
 /**
@@ -194,30 +203,42 @@ function setFiles(fileDirectory) {
 /**
  * on member joining the guild
  * 
+ * 0. see who sent the invite
  * 1. send welcome message to welcome channel
- * 2. send status message to the status channel, indicating one member joining
+ * 2. send a message to level people up  
+ * 3. send status message to the status channel, indicating one member joining
  * @param {Discord.GuildMember} member 
  */
 async function onAdding(member) {
+
+    const updatedInvites = await fetchInvites();
+    const memberInvite = updatedInvites.find(invite => guildInvites.get(invite.code).uses < invite.uses);
+    /**
+     * @type {Discord.GuildMember} inviterGuildMember
+     */
+    const inviterGuildMember = (await util.getGuildInformation()).serverMembers.find(member => memberInvite.inviter.id === member.id);   
+
     // send a welcome message to the welcome channel
     const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForWelcome);
     if (!welcomeChannel) {
-        console.error('welcome channel does not exist ');
+        console.error('welcome channel does not exist');
     }
     else    
     {   // Send the message, mentioning the member    
         await welcomeChannel.send(`${devMessage} Welcome to the server, ${member}`);
     }
 
-    // send a status message to the status channel
-    const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
-    if (!statusChannel) {
-        console.error('status channel does not exist ');
+    const leveluprequestChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForLvlUpRequest);
+    if (!leveluprequestChannel) {
+        console.error('this channel does not exist');
     }
-    else     // Send the message to the status channel
+    else 
     {
-        await statusChannel.send(`${devMessage} ..\n\n MEMBER JOINED: ${member} joined on ${member.joinedAt.toDateString()}\n\n.`);
+        await leveluprequestChannel.send(`!levelup inviting ${member.displayName} . ${inviterGuildMember}`)
     }
+
+    // send a command message to the leveluprequest channel
+    await util.sendToStatusChannel(statusME.onMemberJoin(member, inviterGuildMember, memberInvite));
 }
 
 
@@ -228,19 +249,35 @@ async function onAdding(member) {
  * @param {Discord.GuildMember} member 
  */
 async function onLeaving(member) {
+    await util.sendToStatusChannel(statusME.onMemberLeave(member));
+}
 
-    const statusChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForServerStatus);
-    if (!statusChannel) {
-        console.error('status channel does not exist ');
-    }   
-    else    // Send the message to the status channel, mentioning the member
+async function uponReady() {
+    console.log("logged in as " + client.user.username);
+    try 
     {
-        await statusChannel.send(`${devMessage} ..\n\n MEMBER LEFT: ${member} left on ${member.joinedAt.toDateString()} ${member.joinedAt.toTimeString()}\n\n.`);
-    }    
+        await util.getGuildInformation();
+        (await fetchInvites()).each(invite => {
+            guildInvites.set(invite.code, invite);
+        }); 
+    }
+    catch (err)
+    {
+        throw err;
+    }
 }
 
 /**
- * 
+ * @returns {Discord.Collection<Discord.Snowflake, Discord.Invite>} invites
+ */
+async function fetchInvites()
+{
+    const invites = await exports.theGuild().fetchInvites();
+    return invites;
+}
+
+/**
+ * @type {Function}
  */
 exports.theGuild = (() => {
     let guild = undefined;

@@ -6,8 +6,15 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 const dbController = require('../../util/dbController/controller');
 const util = require('../../util/util');
 const utility = require('../utility/utility');
+const statusME = require('../../util/buildMessageEmbed/statusME');
 const Discord = require('discord.js');
 
+/**
+ * 
+ * @param {Discord.Message} message 
+ * @param {*} args 
+ * @param {*} attachment 
+ */
 async function kick(message, args, attachment) {
     if (util.hasAdminPermission(message))
     {
@@ -20,6 +27,7 @@ async function kick(message, args, attachment) {
             return;
         }
 
+        const kickedBy = message.member;
         const kickingTarget = argument.userInDiscord;
         const kickingTargetUsername = kickingTarget.displayName;
         const kickingTargetID = kickingTarget.id;
@@ -31,19 +39,11 @@ async function kick(message, args, attachment) {
             // go to db and remove the target
             await dbController.deleteUser(kickingTargetID);
 
-            const responseMessage = `${devMessage} ${kickingTarget} with ID ${kickingTargetID} is kicked due to ${kickReason}`;
+            const responseMessage = `${devMessage} ${new Date(Date.now())} : ${kickingTarget} with ID ${kickingTargetID} is kicked due to ${kickReason}`;
 
             await message.channel.send(responseMessage);
 
-            const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
-            if (!statusChannel) 
-            {
-                await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
-            }
-            else 
-            {
-                await statusChannel.send(```.\n\n MEMBER KICKED:${responseMessage} \n\n.```);
-            }
+            await util.sendToStatusChannel(statusME.onMemberKick(kickedBy, kickingTarget, kickReason));
         }
         else 
         {

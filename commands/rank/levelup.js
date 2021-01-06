@@ -68,12 +68,12 @@ async function processArguments(message, args) {
         if (targetsArray.length > 0) {
             const user = targetsArray[0];
             
-            let levelUpReason = utility.processReasoning(0, args);
+            let levelUpReason = utility.processReasoning(1, args);
             let levelRequested = parseInt(args[0]);
-            if (Number.isNaN(levelRequested)) 
+            if (Number.isNaN(levelRequested))  // there is no level requested in the argument
             {
                 levelRequested = 1;
-                levelUpReason = utility.processReasoning(1, args);
+                levelUpReason = utility.processReasoning(0, args);
             }
 
             const userInDB = await databaseController.findUser(user.id);

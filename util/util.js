@@ -1,8 +1,9 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const devMessage = process.env.Dev ? "Dev mode: " : ""
-
 const index = require('../index');
+
+const Discord = require('discord.js');
 
 /**
  * check if the message author has the permission to send this message
@@ -57,54 +58,77 @@ exports.determineRole = function (level) {
         return process.env.memberRoleID;
 }
 
+/**
+ * send a status message to the status channel
+ * @param {Discord.MessageEmbed} embed 
+ */
+exports.sendToStatusChannel = async function(embed) {
+    const statusChannel = (await exports.getGuildInformation()).serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
+
+    if (!statusChannel) {
+        console.error('status channel does not exist ');
+    }
+    else     
+    {
+        await statusChannel.send(embed);
+    }
+}
 
 
 /**
  * generate the custom built server object containing 
  * all the guild informations needed
+ * 
+ * { serverName, serverOwner, serverChannels, serverRoles, serverMembers }
+ * 
  * @returns {Function} aync function that returns a promise of a constructed guild
  */
 exports.getGuildInformation = (function ()
 {
     let guildInformation = undefined;
     
-    return async function()
+    // if timerIsUp is true, it will automatically update, normally it is automatically undefined
+    return async function(timerIsUp) 
     {
-        const guild = index.theGuild();
+        if (guildInformation === undefined || timerIsUp)
+        {
+            const guild = index.theGuild();
 
-        const serverName = guild.name; // string
-        const serverOwner = guild.name; // GuildMember 
+            const serverName = guild.name; // string
+            const serverOwner = guild.name; // GuildMember 
+            
+            const serverChannels = guild.channels.cache.map(channel => channel );
         
-        const serverChannels = guild.channels.cache.map(channel => channel );
-    
-        // an array of reconstructed roles object
-        const serverRolesMap = new Map();
+            // an array of reconstructed roles object
+            const serverRolesMap = new Map();
+            
+            guild.roles.cache.forEach( role => {
+                serverRolesMap.set(role.id, {
+                    id : role.id, // string id of the role
+                    name: role.name, // string name of the role
+                    members : [] // string a list of GuildMember
+                });
+            })
         
-        guild.roles.cache.forEach( role => {
-            serverRolesMap.set(role.id, {
-                id : role.id, // string id of the role
-                name: role.name, // string name of the role
-                members : [] // string a list of GuildMember
+            // an array of server members
+            const serverMembers = (await guild.members.fetch()).map( member => member );
+        
+            // processing this array of members, take the list roles of individual members, add the member to the corresponding role of the serverRolesMap
+            serverMembers.forEach( member => {
+                const memberRoles = member.roles.cache.map(role => role)
+                memberRoles.forEach( role => {
+                    serverRolesMap.get(role.id).members.push(member);
+                });
             });
-        })
-    
-        // an array of server members
-        const serverMembers = (await guild.members.fetch()).map( member => member );
-    
-        // processing this array of members, take the list roles of individual members, add the member to the corresponding role of the serverRolesMap
-        serverMembers.forEach( member => {
-            const memberRoles = member.roles.cache.map(role => role)
-            memberRoles.forEach( role => {
-                serverRolesMap.get(role.id).members.push(member);
+        
+            const serverRoles = [];
+            serverRolesMap.forEach((value, key) => {
+                serverRoles.push(value)
             });
-        });
-    
-        const serverRoles = [];
-        serverRolesMap.forEach((value, key) => {
-            serverRoles.push(value)
-        });
-    
-        guildInformation = { serverName, serverOwner, serverChannels, serverRoles, serverMembers };
+        
+            guildInformation = { serverName, serverOwner, serverChannels, serverRoles, serverMembers };
+        }
+
         return guildInformation;
     }
 })();

@@ -6,6 +6,8 @@ const User = require('../../models/discordUser');
 const util = require('../../util/util');
 const utility = require('../utility/utility');
 const databaseController = require('../../util/dbController/controller');
+const statusME = require('../../util/buildMessageEmbed/statusME');
+
 
 /**
  * 
@@ -27,6 +29,7 @@ async function mute(message, args, attachment) {
 
         const mutedBy = message.member;
 
+        const currentTime = new Date(Date.now())
         const muteRoleID = process.env.muteRoleID;
         const muteTarget = argument.userInDiscord;
         const muteTime = argument.time;
@@ -36,16 +39,7 @@ async function mute(message, args, attachment) {
 
         await message.channel.send(`${devMessage}muted ${muteTarget} for ${muteTime} hours due to ${muteReason}`);
 
-        const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
-        if (!statusChannel) 
-        {
-            await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
-        }
-        else 
-        {
-            await statusChannel.send(`.\n\nMEMBER MUTED: ${devMessage} ${Date.now()} : ${mutedBy} muted${muteTarget} for ${muteTime} hours due to ${muteReason}, 
-                                    the mute will end on ${whenMuteEnd(muteTime)}\n\n.`);
-        }
+        await util.sendToStatusChannel(statusME.onMemberMute(mutedBy, muteTarget, muteReason, muteTime, utility.whenItEnd(currentTime, muteTime)));
 
         if (muteTime !== 0)
         {
@@ -59,17 +53,6 @@ async function mute(message, args, attachment) {
             }, muteTimeInMilliseconds);
         }
     }
-}
-
-/**
- * 
- * @param {Number} muteTime 
- */
-function whenMuteEnd(muteTime)
-{
-    const now = Date.now();
-    const endingTime = new Date(now + muteTime * 60 * 60 * 1000);
-    return endingTime;
 }
 
 module.exports = {

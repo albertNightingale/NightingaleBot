@@ -4,8 +4,10 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const dbController = require('../../util/dbController/controller');
 const util = require('../../util/util');
+const utility = require('../utility/utility');
 const Discord = require('discord.js');
 
+const statusME = require('../../util/buildMessageEmbed/statusME');
 
 /**
  * 
@@ -45,20 +47,15 @@ async function ban(message, args, attachment) {
                 });
             }
 
+
+            const bannedBy = message.member;
+            const timeNow = new Date(Date.now());
             const realBannedDays = argument.time === 0 ? 'life' : (argument.time + ' days');
-            const responseMessage = `${devMessage} ${banningTarget} with ID ${banningTargetID} is banned for ${realBannedDays} due to ${argument.reason}`;
+            const responseMessage = `${devMessage} ${timeNow} : ${banningTarget} with ID ${banningTargetID} is banned for ${realBannedDays} due to ${argument.reason}`;
 
             await message.channel.send(responseMessage);
 
-            const statusChannel = server.serverChannels.find(ch => ch.id === process.env.channelForServerStatus);
-            if (!statusChannel) 
-            {
-                await message.channel.send(`${devMessage} This channel ${process.env.channelForServerStatus} does not exist`);
-            }
-            else 
-            {
-                await statusChannel.send(`.\n\n MEMBER BANNED: ${responseMessage} \n\n.`);
-            }
+            await util.sendToStatusChannel(statusME.onMemberBan(bannedBy, banningTarget, argument.reason, argument.time, utility.whenItEnd(timeNow, argument.time * 24)));
         }
         else 
         {
