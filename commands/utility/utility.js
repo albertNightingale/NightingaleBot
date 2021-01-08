@@ -60,9 +60,9 @@ function processTime(time)
  * @param {Boolean} hasNumber 
  * @param {String[]} args 
  */
-exports.processReasoning = function(hasNumber, args)
+exports.processReasoning = function(target, hasNumber, args)
 {
-    return hasNumber ? processReason(1, args) : processReason(0, args);
+    return hasNumber ? processReason(target, 1, args) : processReason(target, 0, args);
 }
 
 /**
@@ -72,7 +72,7 @@ exports.processReasoning = function(hasNumber, args)
  */
 exports.whenItEnd = function(startTime, timeSpan)
 {
-    const timesToMiliseconds = 1000 * 60 * 60;
+    const timesToMiliseconds = timeSpan * 1000 * 60 * 60;
     return new Date(startTime.getTime() + timesToMiliseconds);
 }
 
