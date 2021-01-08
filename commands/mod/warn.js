@@ -5,8 +5,6 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 const User = require('../../models/discordUser');
 const util = require('../../util/util');
 const utility = require('../utility/utility');
-const databaseController = require('../../util/dbController/controller');
-const statusME = require('../../util/buildMessageEmbed/statusME')
 
 async function warn(message, args, attachment) {
 

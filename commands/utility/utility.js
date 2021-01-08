@@ -27,7 +27,7 @@ exports.processArguments = function (message, args, expectedArgs) {
     if (mentions && mentions.length > 0) {
         const target = mentions[0];
         const time = isArgsInvalidated ? 0 : processTime(args[0]);
-        const reason = processReason(time, args);
+        const reason = processReason(target, time, args);
 
         return {
             userInDiscord: target,
@@ -77,20 +77,21 @@ exports.whenItEnd = function(startTime, timeSpan)
 }
 
 /**
- * 
+ * @param {Discord.GuildMember} target
  * @param {Number} time 
  * @param {String[]} args 
  */
-function processReason(time, args)
+function processReason(target, time, args)
 {
-    const pingDelimiter = '@';
+    const targetID = target.id;
+    const pingDelimiter = '<@';
     const arguments = args.map( arg => {
         if (!arg.startsWith(pingDelimiter))
         {
-            if (arg.includes(pingDelimiter))
+            if (arg.includes(pingDelimiter) && arg.includes(targetID))
             {
                 return arg.substr(0, arg.indexOf(pingDelimiter));
-            }
+            }            
             return arg;
         }    
     });
