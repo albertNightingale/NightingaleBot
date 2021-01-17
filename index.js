@@ -71,6 +71,12 @@ client
     })
     .on('inviteDelete', invite => {
         guildInvites.delete(invite.code);
+    })
+    .on('messageReactionAdd', (messageReaction, user) => {
+        onMessageReactionAdd(messageReaction, user).then().catch(err => console.log(err));
+    })
+    .on('messageReactionRemove', (messageReaction, user) => {
+        onMessageReactionRemove(messageReaction, user).then().catch(err => console.log(err));;
     });
 
 /**
@@ -200,6 +206,38 @@ function setFiles(fileDirectory) {
 }
 
 
+
+/**
+ * @returns {Discord.Collection<Discord.Snowflake, Discord.Invite>} invites
+ */
+async function fetchInvites()
+{
+    const invites = await exports.theGuild().fetchInvites();
+    return invites;
+}
+
+/**
+ * @type {Function}
+ */
+exports.theGuild = (() => {
+    let guild = undefined;
+
+    return function () {
+        if (guild === undefined) {
+            console.log('First time starting Guild');
+            guild = client.guilds.cache.find(guild => guild.id === process.env.serverID);
+        }
+        return guild;
+    }
+})();
+
+/**
+ * Module exports for testings
+ */
+module.exports = {
+    setFiles: setFiles
+}
+
 /**
  * on member joining the guild
  * 
@@ -241,7 +279,6 @@ async function onAdding(member) {
     await util.sendToStatusChannel(statusME.onMemberJoin(member, inviterGuildMember, memberInvite));
 }
 
-
 /**
  * on member leaving the guild
  * 
@@ -268,34 +305,35 @@ async function uponReady() {
 }
 
 /**
- * @returns {Discord.Collection<Discord.Snowflake, Discord.Invite>} invites
+ * see if the reaction added is in the right channel and the right message link
+ * based on the reaction that is added, add a certain role
+ * @param {Discord.MessageReaction} messageReaction 
+ * @param {Discord.User} user 
  */
-async function fetchInvites()
-{
-    const invites = await exports.theGuild().fetchInvites();
-    return invites;
+async function onMessageReactionAdd(messageReaction, user) {
+    const message = messageReaction.message;
+    const channel = message.channel;
+    const userID = user.id;
+    /**
+     * @type {Discord.GuildMember} guildMember
+     */
+    const guildMember = util.getGuildInformation.serverMembers.find(member => member.id === userID);
+
+    
 }
 
 /**
- * @type {Function}
+ * see if the reaction added is in the right channel and the right message link
+ * based on the reaction that is added, add a certain role
+ * @param {Discord.MessageReaction} messageReaction 
+ * @param {Discord.User} user 
  */
-exports.theGuild = (() => {
-    let guild = undefined;
-
-    return function () {
-        if (guild === undefined) {
-            console.log('First time starting Guild');
-            guild = client.guilds.cache.find(guild => guild.id === process.env.serverID);
-        }
-        return guild;
-    }
-})();
-
-/**
- * Module exports for testings
- */
-module.exports = {
-    setFiles: setFiles
-
+async function onMessageReactionRemove(messageReaction, user) {
+    const message = messageReaction.message;
+    const channel = message.channel;
+    const userID = user.id;
+    /**
+     * @type {Discord.GuildMember} guildMember
+     */
+    const guildMember = util.getGuildInformation.serverMembers.find(member => member.id === userID);
 }
-
