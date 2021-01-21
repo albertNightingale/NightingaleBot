@@ -59,6 +59,50 @@ exports.determineRole = function (level) {
 }
 
 /**
+ * lower the rank
+ * @param {number} level
+ */
+exports.getLoweredRole = function(level)
+{
+    if (level >= 50)
+    {
+        if (level >= 160)
+            return process.env.level70RoleID;
+        else if (level >= 120)
+            return process.env.level50RoleID;
+        else if (level >= 90)
+            return process.env.level30RoleID;
+        else if (level >= 70)
+            return process.env.level20RoleID; 
+        else if (level >= 50)
+            return process.env.level10RoleID;
+    }
+    return undefined;
+}
+
+/**
+ * lower the rank
+ * @param {number} level
+ */
+exports.getLoweredRoleLevel = function(level)
+{
+    if (level >= 50)
+    {
+        if (level >= 160)
+            return 70;
+        else if (level >= 120)
+            return 50;
+        else if (level >= 90)
+            return 30;
+        else if (level >= 70)
+            return 20; 
+        else if (level >= 50)
+            return 10;
+    }
+    return undefined;
+}
+
+/**
  * send a status message to the status channel
  * @param {Discord.MessageEmbed} embed 
  */
@@ -92,6 +136,9 @@ exports.getGuildInformation = (function ()
     {
         if (guildInformation === undefined || timerIsUp)
         {
+            /**
+             * @type {Discord.Guild} guild
+             */
             const guild = index.theGuild();
 
             const serverName = guild.name; // string

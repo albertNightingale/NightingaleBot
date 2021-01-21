@@ -72,11 +72,13 @@ client
     .on('inviteDelete', invite => {
         guildInvites.delete(invite.code);
     })
-    .on('messageReactionAdd', (messageReaction, user) => {
+    .on('messageReactionAdd', async (messageReaction, user) => {
+        console.log('hi');
         onMessageReactionAdd(messageReaction, user).then().catch(err => console.log(err));
     })
     .on('messageReactionRemove', (messageReaction, user) => {
-        onMessageReactionRemove(messageReaction, user).then().catch(err => console.log(err));;
+        console.log('hi');
+        onMessageReactionRemove(messageReaction, user).then().catch(err => console.log(err));
     });
 
 /**
@@ -95,7 +97,6 @@ function executeTasks() {
             }
         }
     })
-
 }
 
 /****
@@ -206,7 +207,6 @@ function setFiles(fileDirectory) {
 }
 
 
-
 /**
  * @returns {Discord.Collection<Discord.Snowflake, Discord.Invite>} invites
  */
@@ -297,6 +297,8 @@ async function uponReady() {
         (await fetchInvites()).each(invite => {
             guildInvites.set(invite.code, invite);
         }); 
+
+        // const chanForInfo = await util.getGuildInformation().serverChannels.find( channel => channel.id === process.env.channelForInfo );
     }
     catch (err)
     {
@@ -314,12 +316,19 @@ async function onMessageReactionAdd(messageReaction, user) {
     const message = messageReaction.message;
     const channel = message.channel;
     const userID = user.id;
+
+    const reaction = messageReaction.emoji.id;
+
+    console.log(reaction)
     /**
      * @type {Discord.GuildMember} guildMember
      */
     const guildMember = util.getGuildInformation.serverMembers.find(member => member.id === userID);
 
-    
+    if (message.id === process.env.messageForSubscription && channel.id === process.env.channelForInfo) 
+    {
+        // adding a role to the guild member based on the reaction passed
+    }
 }
 
 /**

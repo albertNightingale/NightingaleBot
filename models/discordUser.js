@@ -24,6 +24,10 @@ const discordPeopleSchema = new Schema(
             {
                 type: Date,
                 required: true,
+            },
+        hasLvl10Award:
+            {
+                
             }
     }
 );

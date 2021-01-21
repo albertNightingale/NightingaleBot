@@ -10,7 +10,8 @@ const devMessage = process.env.Dev ? "Dev mode: " : ""
 
 const User = require('../../models/discordUser')
 const util = require('../../util/util');
-const databaseController = require('../../util/dbController/controller') 
+const databaseController = require('../../util/dbController/controller'); 
+const { DiscordAPIError, GuildMember } = require('discord.js');
 
 async function resetRank(message, args, attachments)
 {
@@ -23,13 +24,16 @@ async function resetRank(message, args, attachments)
     // if not existing, then add that user in
     // if the user exists in the database, set the user level to 1, set member to true
     //      if the user have any non-member rank roles, remove them as well
-
+    /**
+     * @type {GuildMember[]} memberList
+     */
     const memberList = server.serverMembers;
     console.log('member count, ', memberList.length);
 
-    for(let idx = 0; idx < memberList.length; idx++)
+    // vip members are those with high ranks, their ranks will get lowered instead of losing all the ranks
+    const vipMembers = [];
+    for(const member of memberList)
     {
-        const member = memberList[idx];
         let userFromDB = await databaseController.findUser(member.id); 
         if (!userFromDB) // if the model does not exist in the databse, add that user in
         {
@@ -40,22 +44,43 @@ async function resetRank(message, args, attachments)
                 isMember : true,
                 memberSince : Date.now()
             });
-            await databaseController.addUser(userFromDB)    
+            await databaseController.addUser(userFromDB);
+            
         }
         else 
         {
             const currentLevel = userFromDB.level;
+
             const rankRoleID = util.determineRole(currentLevel)
             const isMemberRole = (rankRoleID === process.env.memberRoleID); // is the user in memberRole
             if (!isMemberRole) // if is non-member role, then remove that role           
                 await member.roles.remove( rankRoleID ); // remove the member role
+
+            // if level is higher than 50, lower the level
+            if (currentLevel >= 50)
+            {
+                vipMembers.push(
+                    {
+                        id : member.id,
+                        lvl : util.getLoweredRoleLevel(currentLevel),
+                    }
+                );
+                const newRoleID = util.getLoweredRole(currentLevel);
+                await member.roles.remove( newRoleID ); // add the member role
+            }
         }
         
         if (!util.hasMemberRole(member)) // if not have member role, then add
-            await member.roles.add(process.env.memberRoleID ); // remove the member role
+            await member.roles.add(process.env.memberRoleID); // remove the member role
     }
 
     await databaseController.derankAll();
+    
+    for (const { id, lvl } of vipMembers)
+    {
+        await databaseController.levelUp(id, lvl);
+    }
+    
     await message.channel.send(`${devMessage}resetted rank for everyone!`); 
 }
 
