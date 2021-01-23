@@ -29,11 +29,17 @@ async function mute(message, args, attachment) {
 
         const mutedBy = message.member;
 
-        const currentTime = new Date(Date.now())
+        const currentTime = new Date(Date.now()); 
         const muteRoleID = process.env.muteRoleID;
         const muteTarget = argument.userInDiscord;
         const muteTime = argument.time;
         const muteReason = argument.reason;
+
+        const rolesOfTarget = muteTarget.roles.cache.map( role => role );
+
+        for (const roleOfTarget of rolesOfTarget)
+            if (roleOfTarget.id !== process.env.everyoneRoleID)
+                await muteTarget.roles.remove(roleOfTarget.id);
 
         await muteTarget.roles.add(muteRoleID);
 
@@ -43,10 +49,13 @@ async function mute(message, args, attachment) {
 
         if (muteTime !== 0)
         {
-            const muteTimeInMilliseconds = muteTime * 1000 * 60 * 60;
+            const muteTimeInMilliseconds = muteTime * 1000 // * 60 * 60;
 
             // set a timer to await
-            setTimeout(() => {
+            setTimeout( async() => {
+                for (const rolOfTarget of rolesOfTarget)
+                    if (rolOfTarget.id !== process.env.everyoneRoleID)
+                        await muteTarget.roles.add(rolOfTarget.id);
                 muteTarget.roles.remove(muteRoleID)
                 .then(res => console.log(`${new Date(Date.now())} unmuted for ${muteRoleID} `))
                 .catch(err => console.error(err));

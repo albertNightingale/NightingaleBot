@@ -25,14 +25,8 @@ const discordPeopleSchema = new Schema(
                 type: Date,
                 required: true,
             },
-        hasLvl10Award:
-            {
-                
-            }
     }
 );
-
-
 
 //// create the model class
 const ModelClass = mongoose.model('DiscordUser', discordPeopleSchema); // this is actually a class object
