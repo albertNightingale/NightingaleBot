@@ -49,7 +49,7 @@ async function mute(message, args, attachment) {
 
         if (muteTime !== 0)
         {
-            const muteTimeInMilliseconds = muteTime * 1000 // * 60 * 60;
+            const muteTimeInMilliseconds = muteTime * 1000 * 60 * 60;
 
             // set a timer to await
             setTimeout( async() => {
