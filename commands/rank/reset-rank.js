@@ -62,6 +62,7 @@ async function resetRank(message, args, attachments)
                 vipMembers.push(
                     {
                         id : member.id,
+                        oldlvl : currentLevel,
                         lvl : util.getLoweredRoleLevel(currentLevel),
                     }
                 );
@@ -76,9 +77,9 @@ async function resetRank(message, args, attachments)
 
     await databaseController.derankAll();
     
-    for (const { id, lvl } of vipMembers)
+    for (const { id, oldlvl, lvl } of vipMembers)
     {
-        await databaseController.levelUp(id, lvl);
+        await databaseController.levelUp(id, lvl - oldlvl );
     }
     
     await message.channel.send(`${devMessage}resetted rank for everyone!`); 
