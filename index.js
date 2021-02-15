@@ -266,6 +266,9 @@ async function onAdding(member) {
         await welcomeChannel.send(`${devMessage} Welcome to the server, ${member}`);
     }
 
+    /*
+    // commented out as people considered it abusive
+    // levelup the inviter upon member being invited
     const leveluprequestChannel = member.guild.channels.cache.find(ch => ch.id === process.env.channelForLvlUpRequest);
     if (!leveluprequestChannel) {
         console.error('this channel does not exist');
@@ -274,6 +277,7 @@ async function onAdding(member) {
     {
         await leveluprequestChannel.send(`!levelup inviting ${member.displayName} . ${inviterGuildMember}`)
     }
+    */
 
     // send a command message to the leveluprequest channel
     await util.sendToStatusChannel(statusME.onMemberJoin(member, inviterGuildMember, memberInvite));
