@@ -64,18 +64,18 @@ exports.determineRole = function (level) {
  */
 exports.getLoweredRole = function(level)
 {
-    if (level >= 50)
+    if (level >= 30)
     {
         if (level >= 160)
-            return process.env.level70RoleID;
+            return process.env.level90RoleID;
         else if (level >= 120)
-            return process.env.level50RoleID;
+            return process.env.level70RoleID;
         else if (level >= 90)
-            return process.env.level30RoleID;
+            return process.env.level50RoleID;
         else if (level >= 70)
-            return process.env.level20RoleID; 
+            return process.env.level30RoleID; 
         else if (level >= 50)
-            return process.env.level10RoleID;
+            return process.env.level20RoleID;
     }
     return undefined;
 }
@@ -86,7 +86,7 @@ exports.getLoweredRole = function(level)
  */
 exports.getLoweredRoleLevel = function(level)
 {
-    if (level >= 50)
+    if (level >= 30)
     {
         if (level >= 160)
             return 1;

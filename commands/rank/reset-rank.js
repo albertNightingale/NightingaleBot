@@ -18,6 +18,7 @@ async function resetRank(message, args, attachments)
     if(!util.hasAdminPermission(message)) return;
 
     const server = await util.getGuildInformation();
+    
 
     //// for every user in the server
     // check if that user exists in database, 
@@ -57,7 +58,7 @@ async function resetRank(message, args, attachments)
                 await member.roles.remove( rankRoleID ); // remove the member role
 
             // if level is higher than 50, lower the level
-            if (currentLevel >= 50)
+            if (currentLevel >= 30)
             {
                 vipMembers.push(
                     {
@@ -79,7 +80,7 @@ async function resetRank(message, args, attachments)
     
     for (const { id, oldlvl, lvl } of vipMembers)
     {
-        await databaseController.levelUp(id, lvl - oldlvl );
+        await databaseController.levelUp(id, oldlvl - lvl );
     }
     
     await message.channel.send(`${devMessage}resetted rank for everyone!`); 

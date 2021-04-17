@@ -47,7 +47,6 @@ async function rankOf(message, args, attachments)
                     { name: '   current Level', value: currentLevel },
                     { name: '\u200B', value: '\u200B' },
                 )
-                .setTimestamp()
                 .setFooter('Nightingale Server', logoIconLink);
 
                 await message.channel.send(devMessage, messageEmbed);
